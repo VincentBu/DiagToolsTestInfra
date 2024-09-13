@@ -3,7 +3,7 @@
 open System.IO
 open System.Collections.Generic
 
-open DiagToolsValidationToolSet.Core.Utility.Terminal
+open DiagToolsValidationToolSet.Core.Utility
 open System.Net.Http
 
 module DotNetTool =
@@ -13,7 +13,7 @@ module DotNetTool =
                           (toolFeed: string)
                           (toolName: string)
                           (toolVersion: string) =
-        let result = RunCommandSync env dotnetBinPath $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
+        let result = Terminal.RunCommandSync env "" dotnetBinPath $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
         match result with
         | Choice1Of2 _ -> Choice1Of2 toolRoot
         | Choice2Of2 ex -> Choice2Of2 ex

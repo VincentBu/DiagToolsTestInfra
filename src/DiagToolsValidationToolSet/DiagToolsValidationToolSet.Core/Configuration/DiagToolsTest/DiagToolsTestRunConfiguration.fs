@@ -4,7 +4,8 @@ open System.IO
 
 open YamlDotNet.Serialization
 
-open DiagToolsValidationToolSet.Core.Utility.Common
+open DiagToolsValidationToolSet.Core.Utility
+open System.Collections.Generic
 
 module DiagToolsTestRun =
     type SystemInformation() =
@@ -29,6 +30,7 @@ module DiagToolsTestRun =
         member val DotnetRoot: string = null with get, set
         member val DotnetBinPath: string = null with get, set
         member val DiagToolRoot: string = null with get, set
+        member val EnvironmentVariable: Dictionary<string, string> = new Dictionary<string, string>() with get, set
 
     [<AbstractClass;Sealed>]
     type DiagToolsTestRunConfigurationGenerator private() =
@@ -40,22 +42,22 @@ module DiagToolsTestRun =
             try
                 let configuration = _deserializer.Deserialize<DiagToolsTestRunBaseConfiguration>(serializedConfiguration);
 
-                if IsNullOrEmptyString configuration.SDKVersion
+                if Common.IsNullOrEmptyString configuration.SDKVersion
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify .NET SDK version."))
                 
-                elif IsNullOrEmptyString configuration.TestBed
+                elif Common.IsNullOrEmptyString configuration.TestBed
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify testbed."))
                 
-                elif IsNullOrEmptyString configuration.DiagTool.DiagToolVersion
+                elif Common.IsNullOrEmptyString configuration.DiagTool.DiagToolVersion
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify diag tool version."))
                 
-                elif IsNullOrEmptyString configuration.DiagTool.Feed
+                elif Common.IsNullOrEmptyString configuration.DiagTool.Feed
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify diag tool feed."))
 
-                elif IsNullOrEmptyString configuration.SystemInfo.OSName
+                elif Common.IsNullOrEmptyString configuration.SystemInfo.OSName
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify os name."))
                 
-                elif IsNullOrEmptyString configuration.SystemInfo.CPUArchitecture
+                elif Common.IsNullOrEmptyString configuration.SystemInfo.CPUArchitecture
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify processor architecture."))
 
                 else Choice1Of2 configuration
@@ -82,6 +84,7 @@ module DiagToolsTestRun =
                 config.DotnetRoot <- Path.Combine(config.TestBed, $"dotnet-sdk")
                 config.DotnetBinPath <- Path.Combine(config.DotnetRoot, $"dotnet")
                 config.DiagToolRoot <- Path.Combine(config.TestBed, $"diag-tool")
+                config.EnvironmentVariable["DOTNET_ROOT"] <- Path.Combine(config.TestBed, $"dotnet-sdk")
 
                 Choice1Of2 config
             

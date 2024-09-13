@@ -10,7 +10,7 @@ module Terminal =
         member val StandardError: string = "" with get, set
         member val Proc: Process = null with get, set
 
-    let RunCommandSync (env: Dictionary<string, string>) (fileName: string) (argument: string) =
+    let RunCommandSync (env: Dictionary<string, string>) (workingDirectory: string) (fileName: string) (argument: string) =
         let command = $"{fileName} {argument}"
         try
             let result = new CommandRunResult()
@@ -22,6 +22,8 @@ module Terminal =
             proc.StartInfo.RedirectStandardOutput <- true
             proc.StartInfo.RedirectStandardError <- true
             proc.StartInfo.UseShellExecute <- false
+
+            proc.StartInfo.WorkingDirectory <- workingDirectory
 
             for kp in env do
                 proc.StartInfo.EnvironmentVariables[kp.Key] <- kp.Value
@@ -44,4 +46,39 @@ module Terminal =
             if proc.ExitCode.Equals 0
             then Choice1Of2 result
             else Choice2Of2 (new exn($"RunCommandSync: Command {command} exit with {proc.ExitCode}."))
+        with ex -> Choice2Of2 (new exn($"RunCommandSync: Fail to run command: {command}: {ex.Message}"))
+
+
+    let RunCommandAsync (env: Dictionary<string, string>) (workingDirectory: string) (fileName: string) (argument: string) =
+        let command = $"{fileName} {argument}"
+        try
+            let result = new CommandRunResult()
+            result.Command <- command
+
+            use proc = new Process()
+            proc.StartInfo.FileName <- fileName
+            proc.StartInfo.Arguments <- argument
+            proc.StartInfo.RedirectStandardInput <- true
+            proc.StartInfo.RedirectStandardOutput <- true
+            proc.StartInfo.RedirectStandardError <- true
+            proc.StartInfo.UseShellExecute <- false
+
+            proc.StartInfo.WorkingDirectory <- workingDirectory
+
+            for kp in env do
+                proc.StartInfo.EnvironmentVariables[kp.Key] <- kp.Value
+                
+            proc.OutputDataReceived.Add(fun _ -> 
+                let line = proc.StandardOutput.ReadLine()
+                result.StandardOutput <- $"{result.StandardOutput}{line}\n")
+            proc.ErrorDataReceived.Add(fun _ -> 
+                let line = proc.StandardError.ReadLine()
+                result.StandardError <- $"{result.StandardError}{line}\n")
+
+            proc.Start() |> ignore
+            proc.BeginOutputReadLine()
+            proc.BeginErrorReadLine()
+
+            result.Proc <- proc
+            Choice1Of2 result
         with ex -> Choice2Of2 (new exn($"RunCommandSync: Fail to run command: {command}: {ex.Message}"))

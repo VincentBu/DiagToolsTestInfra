@@ -5,7 +5,7 @@ open System.Runtime.InteropServices
 open System.Net.Http
 open System.Collections.Generic
 
-open DiagToolsValidationToolSet.Core.Utility.Terminal
+open DiagToolsValidationToolSet.Core.Utility
 
 module DotNetSDKAndRuntime =
     let DownloadInstallScript (scriptPath: string) =
@@ -32,7 +32,7 @@ module DotNetSDKAndRuntime =
             Choice1Of2 scriptPath
         else 
             let envPlaceHolder = new Dictionary<string, string>()
-            let result = RunCommandSync envPlaceHolder "chmod" $"+x {scriptPath}"
+            let result = Terminal.RunCommandSync envPlaceHolder "" "chmod" $"+x {scriptPath}"
             match result with
             | Choice1Of2 _ -> Choice1Of2 scriptPath
             | Choice2Of2 ex -> Choice2Of2 ex
@@ -44,7 +44,7 @@ module DotNetSDKAndRuntime =
             else "/bin/bash"
 
         let envPlaceHolder = new Dictionary<string, string>()
-        let result = RunCommandSync envPlaceHolder shellEngine $"{scriptPath} -i {dotnetRoot} -v {dotnetSDKVersion}"
+        let result = Terminal.RunCommandSync envPlaceHolder  "" shellEngine $"{scriptPath} -i {dotnetRoot} -v {dotnetSDKVersion}"
         match result with
         | Choice1Of2 _ -> Choice1Of2 dotnetRoot
         | Choice2Of2 ex -> Choice2Of2 ex
