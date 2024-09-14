@@ -7,14 +7,13 @@ open DiagToolsValidationToolSet.Core.Configuration
 
 module DiagToolsTest =
     
-    let TestDotNetCounters (configuration: DiagToolsTestRun.DiagToolsTestRunConfiguration) =
+    let TestDotNetCounters (configuration: DiagToolsTestConfiguration.DiagToolsTestRunConfiguration) =
         let monitor = new ComputationExpressionBuilder.FunctionMonitorBuilder()
 
         let ev = configuration.EnvironmentVariable
         let dotnet = configuration.DotnetBinPath
         let toolRoot = configuration.DiagToolRoot
         let toolVersion = configuration.DiagTool.DiagToolVersion
-        
         let workingDirectory = configuration.TestResultFolder
         
         monitor {

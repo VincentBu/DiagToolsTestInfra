@@ -18,3 +18,24 @@ module Common =
             sr.CopyTo(sw)
             Choice1Of2 (0 |> ignore)
         with ex -> Choice2Of2 (new exn($"CopyEmbeddedFile: Fail to copy embedded file: {ex.Message}"))
+
+
+    let CopyFile (source: string) (destination: string) =
+        let realDestinationPath =
+            if Directory.Exists destination
+            then
+                let fileName = Path.GetFileName(source)
+                Path.Combine(destination, fileName)
+            else
+                destination
+
+        try
+            File.Copy(source, realDestinationPath)
+            Choice1Of2 (0 |> ignore)
+        with ex -> Choice2Of2 (new exn($"CopyFile: Fail to copy {source} to {realDestinationPath}: {ex.Message}"))
+
+
+    let CreateDirectory (path: string) =
+        try
+            Choice1Of2 (Directory.CreateDirectory path)
+        with ex -> Choice2Of2 (new exn($"CreateDirectory: Fail to create directory {path}: {ex.Message}"))

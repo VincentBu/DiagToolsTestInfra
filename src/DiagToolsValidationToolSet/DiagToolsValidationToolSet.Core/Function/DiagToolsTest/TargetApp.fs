@@ -10,15 +10,13 @@ module TargetApp =
     
     let currentNamespace = "DiagToolsValidationToolSet.Core.Function"
     
-    let CreateBuildConsoleApp (configuration: DiagToolsTestRun.DiagToolsTestRunConfiguration) =
+    let CreateBuildConsoleApp (configuration: DiagToolsTestConfiguration.DiagToolsTestRunConfiguration) =
         let ev = configuration.EnvironmentVariable
         let dotnet = configuration.DotnetBinPath
         let appName = "console"
         let appTemplateName = "console"
         let appRoot = Path.Combine(configuration.TestBed, appName)
 
-        let CreateConsoleApp = DotNetApp.CreateDotNetApp ev dotnet appTemplateName
-        
         let ReplaceSourceFileForProject (appRoot: string) = 
             let f = Common.CopyEmbeddedFile $"{currentNamespace}.Resources.consoleapp.Program.cs"
             let destPath = Path.Combine(appRoot, "Program.cs")
@@ -27,35 +25,33 @@ module TargetApp =
             | Choice1Of2 _ -> Choice1Of2 appRoot
             | Choice2Of2 ex -> Choice2Of2 ex
 
-        let BuildConsoleApp = DotNetApp.BuildDotNetApp ev "" dotnet
-
         monitor {
-            let! appRoot = CreateConsoleApp appRoot
+            let! appRoot = DotNetApp.CreateDotNetApp ev dotnet appTemplateName appRoot
             let! appRoot = ReplaceSourceFileForProject appRoot
-            let! appRoot = BuildConsoleApp appRoot
-            return appRoot 
+            let! appRoot = DotNetApp.BuildDotNetApp ev "" dotnet appRoot
+            let! appSymbolFolder = DotNetApp.GetAppSymbolFolder "Debug" appRoot
+            let! appBin = DotNetApp.GetAppBin appName appSymbolFolder
+            return appBin
         }
 
 
-    let CreateBuildWebApp (configuration: DiagToolsTestRun.DiagToolsTestRunConfiguration) =
+    let CreateBuildWebApp (configuration: DiagToolsTestConfiguration.DiagToolsTestRunConfiguration) =
         let ev = configuration.EnvironmentVariable
         let dotnet = configuration.DotnetBinPath
         let appName = "webapp"
         let appTemplateName = "webapp"
         let appRoot = Path.Combine(configuration.TestBed, appName)
 
-        let CreateConsoleApp = DotNetApp.CreateDotNetApp ev dotnet appTemplateName
-
-        let BuildConsoleApp = DotNetApp.BuildDotNetApp ev "" dotnet
-
         monitor {
-            let! appRoot = CreateConsoleApp appRoot
-            let! appRoot = BuildConsoleApp appRoot
-            return appRoot 
+            let! appRoot = DotNetApp.CreateDotNetApp ev dotnet appTemplateName appRoot
+            let! appRoot = DotNetApp.BuildDotNetApp ev "" dotnet appRoot
+            let! appSymbolFolder = DotNetApp.GetAppSymbolFolder "Debug" appRoot
+            let! appBin = DotNetApp.GetAppBin appName appSymbolFolder
+            return appBin
         }
 
 
-    let RunWebapp (configuration: DiagToolsTestRun.DiagToolsTestRunConfiguration) =
+    let RunWebapp (configuration: DiagToolsTestConfiguration.DiagToolsTestRunConfiguration) =
         let ev = configuration.EnvironmentVariable
         let appName = "webapp"
         let appRoot = Path.Combine(configuration.TestBed, appName)
@@ -71,7 +67,7 @@ module TargetApp =
             Choice1Of2 commandRunResult
 
 
-    let CreateBuildGCDumpPlayground (configuration: DiagToolsTestRun.DiagToolsTestRunConfiguration) =
+    let CreateBuildGCDumpPlayground (configuration: DiagToolsTestConfiguration.DiagToolsTestRunConfiguration) =
         let ev = configuration.EnvironmentVariable
         let dotnet = configuration.DotnetBinPath
         let appName = "GCDumpPlayground2"
@@ -94,11 +90,13 @@ module TargetApp =
             let! appRoot = CreateConsoleApp appRoot
             let! appRoot = ReplaceSourceFileForProject appRoot
             let! appRoot = BuildConsoleApp appRoot
-            return appRoot 
+            let! appSymbolFolder = DotNetApp.GetAppSymbolFolder "Debug" appRoot
+            let! appBin = DotNetApp.GetAppBin appName appSymbolFolder
+            return appBin
         }
 
 
-    let RunGCDumpPlayground (configuration: DiagToolsTestRun.DiagToolsTestRunConfiguration) =
+    let RunGCDumpPlayground (configuration: DiagToolsTestConfiguration.DiagToolsTestRunConfiguration) =
         let ev = configuration.EnvironmentVariable
         let appName = "GCDumpPlayground2"
         let appRoot = Path.Combine(configuration.TestBed, appName)

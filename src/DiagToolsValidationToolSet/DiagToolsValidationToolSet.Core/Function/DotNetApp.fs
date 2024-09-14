@@ -68,13 +68,12 @@ module DotNetApp =
         let GetAppSymbolFolder = GetAppSymbolFolder buildConfig
         let GetAppBin = GetAppBin appName
 
-        let appExecutable = 
+        let procRunresult = 
             monitor {
                 let! appSymbolFolder = GetAppSymbolFolder appRoot
                 let! appBin = GetAppBin appSymbolFolder
-                return appBin
+                let! state = Terminal.RunCommandAsync env "" appBin argument
+                return state
             }
         
-        match appExecutable with
-        | Choice1Of2 appBin -> Terminal.RunCommandAsync env "" appBin argument
-        | Choice2Of2 ex -> Choice2Of2 ex
+        procRunresult

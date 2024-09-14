@@ -7,15 +7,25 @@ open DiagToolsValidationToolSet.Core.Utility
 open System.Net.Http
 
 module DotNetTool =
+    let GetToolDll (toolRoot: string) (toolName: string) (toolVersion: string) =
+        let intermediateDirectoryRoot = Path.Combine(toolRoot, ".store", toolName, toolVersion, toolName, toolVersion, "tools")
+        try
+            let intermediateDirectory = 
+                Directory.GetDirectories(intermediateDirectoryRoot, "net*")
+                |> Array.head
+            let toolDll = Path.Combine(intermediateDirectory, "any", $"{toolName}.dll")
+            Choice1Of2 toolDll
+        with ex -> Choice2Of2 (new exn($"GetToolDll: Fail to find dll for {toolName} in {toolRoot}: {ex.Message}"))
+
     let InstallDotNetTool (env: Dictionary<string, string>)
                           (dotnetBinPath: string)
                           (toolRoot: string)
                           (toolFeed: string)
-                          (toolName: string)
-                          (toolVersion: string) =
+                          (toolVersion: string) 
+                          (toolName: string) =
         let result = Terminal.RunCommandSync env "" dotnetBinPath $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
         match result with
-        | Choice1Of2 _ -> Choice1Of2 toolRoot
+        | Choice1Of2 _ -> GetToolDll toolRoot toolName toolVersion
         | Choice2Of2 ex -> Choice2Of2 ex
 
 
@@ -33,14 +43,3 @@ module DotNetTool =
                 return Choice1Of2 perfcollectPath
             with ex -> return Choice2Of2 (new exn($"DownloadPerfcollect: Fail to download perfcollect: {ex.Message}."))
         }
-
-
-    let GetToolDll (toolRoot: string) (toolName: string) (toolVersion: string) =
-        let intermediateDirectoryRoot = Path.Combine(toolRoot, ".store", toolName, toolVersion, toolName, toolVersion, "tools")
-        try
-            let intermediateDirectory = 
-                Directory.GetDirectories(intermediateDirectoryRoot, "net*")
-                |> Array.head
-            let toolDll = Path.Combine(intermediateDirectory, "any", $"{toolName}.dll")
-            Choice1Of2 toolDll
-        with ex -> Choice2Of2 (new exn($"GetToolDll: Fail to find dll for {toolName} in {toolRoot}: {ex.Message}"))

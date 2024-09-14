@@ -7,7 +7,7 @@ open YamlDotNet.Serialization
 open DiagToolsValidationToolSet.Core.Utility
 open System.Collections.Generic
 
-module DiagToolsTestRun =
+module DiagToolsTestConfiguration =
     type SystemInformation() =
         member val OSName: string = null with get, set
         member val CPUArchitecture: string = null with get, set
