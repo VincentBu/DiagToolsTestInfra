@@ -1,5 +1,6 @@
 ﻿namespace DiagToolsValidator.Core.CoreFunctionality
 
+open System.IO
 open System.Collections.Generic
 open System.Diagnostics
 open System.Text
@@ -41,24 +42,30 @@ module Core =
         let outputDataReceivedHandler (sender: obj) (args: DataReceivedEventArgs) =
             let line = args.Data
             if not (isNull line) then
-                _StandardOutput.AppendLine line |> ignore
+                _StandardOutput.AppendLine $"   {line}" |> ignore
                 if not silentRun then
-                    printfn "%s" line
+                    printfn "   %s" line
 
         let errorDataReceivedHandler (sender: obj) (args: DataReceivedEventArgs) =
             let line = args.Data
             if not (isNull line) then
-                _StandardError.AppendLine line |> ignore
+                _StandardError.AppendLine $"   {line}" |> ignore
                 if not silentRun then
-                    printfn "%s" line
+                    printfn "   %s" line
                 
         do proc.OutputDataReceived.AddHandler outputDataReceivedHandler
         do proc.ErrorDataReceived.AddHandler errorDataReceivedHandler
+
+        new() as that =
+            let env = new Dictionary<string, string>()
+            CommandInvoker(env, "", "", "", true)
+            then that.Exception <- new exn("Empty command invoker")
 
         member val Command: string = $"{fileName} {argument}" with get
         member val StandardOutput: StringBuilder = _StandardOutput with get
         member val StandardError: StringBuilder = _StandardError with get
         member val Proc: Process = proc with get
+        member val Exception: exn = null with get, set
 
 
     let RunCommand (fileName: string)
@@ -72,16 +79,73 @@ module Core =
                                                 fileName,
                                                 argument,
                                                 silentRun)
+        try
+            if not silentRun
+            then printfn "Run command: %s" commandInvoker.Command
+            commandInvoker.Proc.Start() |> ignore
+            commandInvoker.Proc.BeginOutputReadLine()
+            commandInvoker.Proc.BeginErrorReadLine()
 
-        commandInvoker.Proc.Start() |> ignore
-        commandInvoker.Proc.BeginOutputReadLine()
-        commandInvoker.Proc.BeginErrorReadLine()
-
-        if waitForExit
-        then
-            commandInvoker.Proc.WaitForExit() |> ignore
+            if waitForExit
+            then
+                commandInvoker.Proc.WaitForExit() |> ignore
+        
+        with ex ->
+            commandInvoker.Exception <- ex
         
         commandInvoker
+
+
+    type CommandInvokeTraceBuilder(invokeMessage: string, loggerPath: string) as this =
+        do this.AppendLineToLogger loggerPath invokeMessage
+
+        member this.AppendLineToLogger (loggerFilePath: string) (line: string) =
+            File.AppendAllText(loggerFilePath, $"{line}\n")
+
+        member this.Yield(x: CommandInvoker) =
+            this.AppendLineToLogger loggerPath $"Run command: {x.Command}"
+            this.AppendLineToLogger loggerPath (x.StandardOutput.ToString())
+            this.AppendLineToLogger loggerPath (x.StandardError.ToString())
+            if not (isNull(x.Exception))
+            then 
+                this.AppendLineToLogger loggerPath (x.Exception.Message)
+                this.AppendLineToLogger loggerPath (x.Exception.StackTrace)
+            x
+
+        member this.Combine(a: CommandInvoker, b: unit -> CommandInvoker) =
+            if isNull(a.Exception) && IsNullOrEmptyString (a.StandardError.ToString())
+            then b()
+            else a
+
+        member this.Zero() =
+            CommandInvoker()
+
+        member this.Delay(funToDelay) = 
+            funToDelay
+
+        member this.Run(funToDelay) = 
+            funToDelay()
+
+        member this.For(collection, f: 'a -> CommandInvoker) =
+            let successFullInvokerList = new List<CommandInvoker>()
+
+            let rec EarlyReturnLoop seq =
+                match seq with
+                | [] -> 
+                    if successFullInvokerList.Count = 0
+                    then
+                        new CommandInvoker()
+                    else
+                        successFullInvokerList[0]
+                | x::xs -> 
+                    let (result: CommandInvoker) = f x
+                    if isNull(result.Exception) && IsNullOrEmptyString (result.StandardError.ToString())
+                    then
+                        successFullInvokerList.Add(result)
+                        EarlyReturnLoop xs
+                    else result
+
+            EarlyReturnLoop collection
 
 
     type ChoiceChainBuilder() =

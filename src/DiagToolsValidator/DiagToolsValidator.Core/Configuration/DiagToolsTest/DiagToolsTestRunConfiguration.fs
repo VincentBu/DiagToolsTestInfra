@@ -1,11 +1,10 @@
-﻿namespace DiagToolsValidationToolSet.Core.Configuration
+﻿namespace DiagToolsValidator.Core.Configuration
 
 open System.IO
+open System.Collections.Generic
 
 open YamlDotNet.Serialization
-
-open DiagToolsValidationToolSet.Core.Utility
-open System.Collections.Generic
+open DiagToolsValidator.Core.CoreFunctionality
 
 module DiagToolsTestConfiguration =
     type SystemInformation() =
@@ -42,22 +41,22 @@ module DiagToolsTestConfiguration =
             try
                 let configuration = _deserializer.Deserialize<DiagToolsTestRunBaseConfiguration>(serializedConfiguration);
 
-                if Common.IsNullOrEmptyString configuration.SDKVersion
+                if Core.IsNullOrEmptyString configuration.SDKVersion
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify .NET SDK version."))
                 
-                elif Common.IsNullOrEmptyString configuration.TestBed
+                elif Core.IsNullOrEmptyString configuration.TestBed
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify testbed."))
                 
-                elif Common.IsNullOrEmptyString configuration.DiagTool.DiagToolVersion
+                elif Core.IsNullOrEmptyString configuration.DiagTool.DiagToolVersion
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify diag tool version."))
                 
-                elif Common.IsNullOrEmptyString configuration.DiagTool.Feed
+                elif Core.IsNullOrEmptyString configuration.DiagTool.Feed
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify diag tool feed."))
 
-                elif Common.IsNullOrEmptyString configuration.SystemInfo.OSName
+                elif Core.IsNullOrEmptyString configuration.SystemInfo.OSName
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify os name."))
                 
-                elif Common.IsNullOrEmptyString configuration.SystemInfo.CPUArchitecture
+                elif Core.IsNullOrEmptyString configuration.SystemInfo.CPUArchitecture
                 then Choice2Of2 (new exn($"{nameof(DiagToolsTestRunConfigurationGenerator)}: Please specify processor architecture."))
 
                 else Choice1Of2 configuration

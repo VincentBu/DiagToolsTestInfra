@@ -3,10 +3,10 @@
 open System.IO
 open System.Net.Http
 open System.Runtime.InteropServices
+open System.Collections.Generic
 
 open Core
 open FileSystemFuntion
-open System.Collections.Generic
 
 
 module DotNet =
@@ -110,16 +110,17 @@ module DotNet =
                                                 dotnetExecutable,
                                                 argument,
                                                 silentRun)
+        try
+            commandInvoker.Proc.Start() |> ignore
+            commandInvoker.Proc.BeginOutputReadLine()
+            commandInvoker.Proc.BeginErrorReadLine()
 
-        commandInvoker.Proc.Start() |> ignore
-        commandInvoker.Proc.BeginOutputReadLine()
-        commandInvoker.Proc.BeginErrorReadLine()
-
-        if waitForExit
-        then
-            commandInvoker.Proc.WaitForExit() |> ignore
+            if waitForExit
+            then
+                commandInvoker.Proc.WaitForExit() |> ignore
         
+        with ex -> 
+            commandInvoker.Exception <- ex
+
         commandInvoker
-
-
     
