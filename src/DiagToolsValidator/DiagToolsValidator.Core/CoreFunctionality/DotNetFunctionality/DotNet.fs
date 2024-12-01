@@ -105,22 +105,6 @@ module DotNet =
         let dotnetExecutable = Path.Combine(dotNetRoot, $"dotnet{executableExtension}")
 
         environment["DOTNET_ROOT"] <- dotNetRoot
-        let commandInvoker = new CommandInvoker(environment,
-                                                workDirectory,
-                                                dotnetExecutable,
-                                                argument,
-                                                silentRun)
-        try
-            commandInvoker.Proc.Start() |> ignore
-            commandInvoker.Proc.BeginOutputReadLine()
-            commandInvoker.Proc.BeginErrorReadLine()
-
-            if waitForExit
-            then
-                commandInvoker.Proc.WaitForExit() |> ignore
         
-        with ex -> 
-            commandInvoker.Exception <- ex
-
-        commandInvoker
+        RunCommand dotnetExecutable argument workDirectory environment waitForExit silentRun
     

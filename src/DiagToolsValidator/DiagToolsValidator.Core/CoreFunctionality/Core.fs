@@ -23,49 +23,51 @@ module Core =
                          workDirectory: string,
                          fileName: string,
                          argument: string,
-                         silentRun: bool) =
-        let proc = new Process()
+                         silentRun: bool,
+                         ex: exn) =
         let _StandardOutput = new StringBuilder()
         let _StandardError = new StringBuilder()
+        let proc = 
+            if isNull(ex)
+            then
+                let proc = new Process()
 
-        do proc.StartInfo.FileName <- fileName
-        do proc.StartInfo.Arguments <- argument
-        do proc.StartInfo.UseShellExecute <- false
-        do proc.StartInfo.RedirectStandardInput <- true
-        do proc.StartInfo.RedirectStandardOutput <- true
-        do proc.StartInfo.RedirectStandardError <- true
-        do proc.StartInfo.WorkingDirectory <- workDirectory
+                do proc.StartInfo.FileName <- fileName
+                do proc.StartInfo.Arguments <- argument
+                do proc.StartInfo.UseShellExecute <- false
+                do proc.StartInfo.RedirectStandardInput <- true
+                do proc.StartInfo.RedirectStandardOutput <- true
+                do proc.StartInfo.RedirectStandardError <- true
+                do proc.StartInfo.WorkingDirectory <- workDirectory
 
-        do for key in environment.Keys do
-            proc.StartInfo.EnvironmentVariables[key] <- environment[key]
+                do for key in environment.Keys do
+                    proc.StartInfo.EnvironmentVariables[key] <- environment[key]
 
-        let outputDataReceivedHandler (sender: obj) (args: DataReceivedEventArgs) =
-            let line = args.Data
-            if not (isNull line) then
-                _StandardOutput.AppendLine $"   {line}" |> ignore
-                if not silentRun then
-                    printfn "   %s" line
+                let outputDataReceivedHandler (sender: obj) (args: DataReceivedEventArgs) =
+                    let line = args.Data
+                    if not (isNull line) then
+                        _StandardOutput.AppendLine $"   {line}" |> ignore
+                        if not silentRun then
+                            printfn "   %s" line
 
-        let errorDataReceivedHandler (sender: obj) (args: DataReceivedEventArgs) =
-            let line = args.Data
-            if not (isNull line) then
-                _StandardError.AppendLine $"   {line}" |> ignore
-                if not silentRun then
-                    printfn "   %s" line
+                let errorDataReceivedHandler (sender: obj) (args: DataReceivedEventArgs) =
+                    let line = args.Data
+                    if not (isNull line) then
+                        _StandardError.AppendLine $"   {line}" |> ignore
+                        if not silentRun then
+                            printfn "   %s" line
                 
-        do proc.OutputDataReceived.AddHandler outputDataReceivedHandler
-        do proc.ErrorDataReceived.AddHandler errorDataReceivedHandler
-
-        new() as that =
-            let env = new Dictionary<string, string>()
-            CommandInvoker(env, "", "", "", true)
-            then that.Exception <- new exn("Empty command invoker")
+                do proc.OutputDataReceived.AddHandler outputDataReceivedHandler
+                do proc.ErrorDataReceived.AddHandler errorDataReceivedHandler
+                proc
+            else
+                null
 
         member val Command: string = $"{fileName} {argument}" with get
         member val StandardOutput: StringBuilder = _StandardOutput with get
         member val StandardError: StringBuilder = _StandardError with get
         member val Proc: Process = proc with get
-        member val Exception: exn = null with get, set
+        member val Exception: exn = ex with get
 
 
     let RunCommand (fileName: string)
@@ -74,12 +76,13 @@ module Core =
                    (environment: Dictionary<string, string>)
                    (waitForExit: bool) 
                    (silentRun: bool) =
-        let commandInvoker = new CommandInvoker(environment,
-                                                workDirectory,
-                                                fileName,
-                                                argument,
-                                                silentRun)
         try
+            let commandInvoker = new CommandInvoker(environment,
+                                                    workDirectory,
+                                                    fileName,
+                                                    argument,
+                                                    silentRun,
+                                                    null)
             if not silentRun
             then printfn "Run command: %s" commandInvoker.Command
             commandInvoker.Proc.Start() |> ignore
@@ -89,14 +92,18 @@ module Core =
             if waitForExit
             then
                 commandInvoker.Proc.WaitForExit() |> ignore
-        
+            commandInvoker
         with ex ->
-            commandInvoker.Exception <- ex
-        
-        commandInvoker
+            new CommandInvoker(environment,
+                               workDirectory,
+                               fileName,
+                               argument,
+                               silentRun,
+                               ex)
 
 
     type CommandInvokeTraceBuilder(invokeMessage: string, loggerPath: string) as this =
+        let emptyEnv = new Dictionary<string, string>()
         do this.AppendLineToLogger loggerPath invokeMessage
 
         member this.AppendLineToLogger (loggerFilePath: string) (line: string) =
@@ -108,7 +115,9 @@ module Core =
             this.AppendLineToLogger loggerPath (x.StandardError.ToString())
             if not (isNull(x.Exception))
             then 
+                this.AppendLineToLogger loggerPath $"Fail to run command - {x.Command}"
                 this.AppendLineToLogger loggerPath (x.Exception.Message)
+                this.AppendLineToLogger loggerPath "Stack Trace:"
                 this.AppendLineToLogger loggerPath (x.Exception.StackTrace)
             x
 
@@ -118,7 +127,7 @@ module Core =
             else a
 
         member this.Zero() =
-            CommandInvoker()
+            CommandInvoker(emptyEnv, "", "", "", true, new exn("Empty invoker"))
 
         member this.Delay(funToDelay) = 
             funToDelay
@@ -134,7 +143,7 @@ module Core =
                 | [] -> 
                     if successFullInvokerList.Count = 0
                     then
-                        new CommandInvoker()
+                        this.Zero()
                     else
                         successFullInvokerList[0]
                 | x::xs -> 
