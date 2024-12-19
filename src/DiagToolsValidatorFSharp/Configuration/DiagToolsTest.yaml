@@ -1,0 +1,29 @@
+# TestBedRoot is the directory where the testbed is stored.
+TestBed: E:\Workspace\DiagToolTask
+OptionalFeatureContainer: y
+
+DotNet:
+  # Full version of .net(core) sdk.
+  SDKVersion: 8.0.205-servicing.24212.27
+
+DiagTool:
+  # Full version of diagnostics tools.
+  DiagToolVersion: 8.0.530301
+    
+  # diag tools to test, comment out the tools that don't need to be validated
+  ToolsToTest: 
+    - dotnet-counters
+    - dotnet-dump
+    - dotnet-gcdump
+    - dotnet-sos
+    - dotnet-stack
+    - dotnet-trace
+  # DO NOT CHANGE FEED BEFORE CONFIRMING WITH CLIENT
+  Feed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+
+TargetApp:
+  BuildConfig: Debug
+
+SystemInfo:
+  OSName: windows11
+  CPUArchitecture: x64

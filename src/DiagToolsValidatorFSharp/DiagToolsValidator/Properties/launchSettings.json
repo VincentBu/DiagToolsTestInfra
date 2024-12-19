@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DiagToolsValidator": {
+      "commandName": "Project",
+      "commandLineArgs": "diagtoolstest-run -c \"C:\\Workspace\\DiagTool\\TestOutput\\DiagToolsTest.yaml\""
+    }
+  }
+}
