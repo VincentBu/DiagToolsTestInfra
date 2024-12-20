@@ -1,6 +1,7 @@
 # TestBedRoot is the directory where the testbed is stored.
 TestBed: E:\Workspace\DiagToolTask
 OptionalFeatureContainer: y
+debugger: 
 
 DotNet:
   # Full version of .net(core) sdk.
@@ -27,3 +28,4 @@ TargetApp:
 SystemInfo:
   OSName: windows11
   CPUArchitecture: x64
+  Debugger: windbgx

@@ -13,6 +13,7 @@ module DiagToolsTestConfiguration =
     type SystemInformation() =
         member val OSName: string = null with get, set
         member val CPUArchitecture: string = null with get, set
+        member val Debugger: string = null with get, set
     
     type DotNetSetting() =
         member val SDKVersion: string = null with get, set
@@ -35,6 +36,7 @@ module DiagToolsTestConfiguration =
         member val TestBed: string = null with get, set
         member val TestResultFolder: string = null with get, set
         member val OptionalFeaturedContainer: bool = true with get, set
+        member val Debugger: string = null with get, set
         member val DotNet: DotNetSetting = new DotNetSetting() with get, set
         member val DiagTool: DiagToolSetting = new DiagToolSetting() with get, set
         member val TargetApp: TargetAppSetting = new TargetAppSetting() with get, set
@@ -58,6 +60,11 @@ module DiagToolsTestConfiguration =
                 elif String.IsNullOrEmpty configuration.TestBed
                 then
                     parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify testbed")
+                    raise(parseExn)
+
+                elif String.IsNullOrEmpty configuration.Debugger
+                then
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify debugger")
                     raise(parseExn)
                 
                 elif String.IsNullOrEmpty configuration.DiagTool.DiagToolVersion

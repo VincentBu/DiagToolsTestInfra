@@ -31,6 +31,7 @@ module DiagToolsTestRun =
                 ("dotnet-counters", DotNetCounters.TestDotNetCounters);
                 ("dotnet-dump", DotNetDump.TestDotNetDump);
                 ("dotnet-gcdump", DotNetGCDump.TestDotNetGCDump);
+                ("dotnet-sos", DotNetSOS.TestDotNetSos);
                 ("dotnet-stack", DotNetStack.TestDotNetStack);
                 ("dotnet-trace", DotNetTrace.TestDotNetTrace);
             ]

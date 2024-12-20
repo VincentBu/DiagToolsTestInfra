@@ -13,10 +13,10 @@
     <Compile Include="Functionality\DotNetFunctionality\DotNetTool.fs" />
     <Compile Include="Configuration\DiagToolsTest\DiagToolsTestRunConfiguration.fs" />
     <Compile Include="Task\DiagToolsTest\Infrastructure.fs" />
-    <Compile Include="Task\DiagToolsTest\DotNetCountersTest.fs" />
-    <Compile Include="Task\DiagToolsTest\DotNetDumpTest.fs" />
+    <Compile Include="Task\DiagToolsTest\DotNetCounters.fs" />
+    <Compile Include="Task\DiagToolsTest\DotNetDump.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetGCDump.fs" />
-    <Compile Include="Task\DiagToolsTest\DotNetSos.fs" />
+    <Compile Include="Task\DiagToolsTest\DotNetSOS.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetStack.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetTrace.fs" />
   </ItemGroup>
