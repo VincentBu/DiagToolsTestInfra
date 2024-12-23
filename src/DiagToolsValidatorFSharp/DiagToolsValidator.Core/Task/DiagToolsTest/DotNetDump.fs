@@ -30,7 +30,7 @@ module DotNetDump =
                 $"{toolILPath} ps";
                 $"{toolILPath} collect -p {webappInvoker.Proc.Id} -o {dumpPath}";
             ] do
-                yield! DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                arguments
                                                configuration.TestResultFolder
                                                true
@@ -41,7 +41,7 @@ module DotNetDump =
             CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
 
             // Analyze dump
-            let analyzeInvokeResult = DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+            let analyzeInvokeResult = DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                               $"{toolILPath} analyze {dumpPath}"
                                                               configuration.TestResultFolder
                                                               true

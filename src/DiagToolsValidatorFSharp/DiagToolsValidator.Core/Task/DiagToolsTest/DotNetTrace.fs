@@ -33,7 +33,7 @@ module DotNetTrace =
                 $"{toolILPath} collect -p {webappInvoker.Proc.Id} -o {netTracePath} --duration 00:00:10";
                 $"{toolILPath} convert {netTracePath} --format speedscope -o {speedScopePath}";
             ] do
-                yield! DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                arguments
                                                configuration.TestResultFolder
                                                true

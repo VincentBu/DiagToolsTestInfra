@@ -3,20 +3,22 @@
 open System
 open System.IO
 open System.Xml.Linq
+open System.Collections.Generic
 
 
 module DotNetApp =
-    type DotNetApp (dotNetRoot: string,
+    type DotNetApp (dotNetEnv: Dictionary<string, string>,
                     appTemplate: string,
                     appRoot: string) =
-        let _dotNetRoot = dotNetRoot
+        let _dotNetEnv = dotNetEnv
         let _appTemplate = appTemplate
         let _appRoot = appRoot
 
         member val AppRoot: string = _appRoot with get
 
         new() =
-            new DotNetApp("", "", "")
+            let env = new Dictionary<string, string>()
+            new DotNetApp(env, "", "")
 
         member x.GetProjectFile = Directory.GetFiles(_appRoot, "*.csproj")[0]
         
@@ -63,7 +65,7 @@ module DotNetApp =
             }
             
         member x.CreateApp () =
-            DotNet.RunDotNetCommand dotNetRoot 
+            DotNet.RunDotNetCommand _dotNetEnv 
                                     $"new {_appTemplate} -o {_appRoot} --force"
                                     "" 
                                     true 
@@ -72,7 +74,7 @@ module DotNetApp =
                                     true
 
         member x.BuildApp (buildConfig: string) =
-            DotNet.RunDotNetCommand dotNetRoot
+            DotNet.RunDotNetCommand _dotNetEnv
                                     $"build -c {buildConfig}"
                                     appRoot 
                                     true 
@@ -81,7 +83,7 @@ module DotNetApp =
                                     true
                                     
         member x.PublishApp (buildConfig: string) =
-            DotNet.RunDotNetCommand dotNetRoot
+            DotNet.RunDotNetCommand _dotNetEnv
                                     $"publish -r {DotNet.CurrentRID} -c {buildConfig}"
                                     appRoot 
                                     true 

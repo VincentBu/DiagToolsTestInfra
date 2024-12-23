@@ -152,10 +152,17 @@ module Core =
             let tarPath = Path.GetTempFileName()
             (
                 use originalFileStream = File.OpenRead gzipPath
-                use decompressedFileStream = File.Create tarPath
-                use decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress)
-                decompressionStream.CopyTo(decompressedFileStream)
+                (
+                    use decompressedFileStream = File.Create tarPath
+                    (
+                        use decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress)
+                        (
+                            decompressionStream.CopyTo(decompressedFileStream)
+                        )
+                    )
+                )
             )
+            CreateDirectory destinationFolder |> ignore
             TarFile.ExtractToDirectory(tarPath, destinationFolder, true)
             File.Delete tarPath
             Choice1Of2 (DirectoryInfo(destinationFolder))

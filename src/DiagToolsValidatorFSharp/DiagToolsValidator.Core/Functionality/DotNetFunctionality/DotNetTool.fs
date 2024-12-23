@@ -2,6 +2,7 @@
 
 open System.IO
 open System.Net.Http
+open System.Collections.Generic
 
 
 module DotNetTool =
@@ -17,12 +18,12 @@ module DotNetTool =
             Choice2Of2 ex
 
 
-    let InstallDotNetTool (dotNetRoot: string)
+    let InstallDotNetTool (dotNetEnv: Dictionary<string, string>)
                           (toolRoot: string)
                           (toolFeed: string)
                           (toolVersion: string) 
                           (toolName: string) =
-        DotNet.RunDotNetCommand dotNetRoot 
+        DotNet.RunDotNetCommand dotNetEnv 
                                 $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
                                 ""
                                 true

@@ -42,7 +42,6 @@ module DiagToolsTestRun =
 
             let configuration = DiagToolsTestConfiguration.DiagToolsTestConfigurationParser.GenerateConfigFile setting.ConfigurationPath
             
-            (*
             // Create testbed and test result folder
             Core.CreateDirectory configuration.TestResultFolder |> ignore
 
@@ -111,7 +110,6 @@ module DiagToolsTestRun =
                 yield! configuration.TargetApp.WebApp.BuildApp(buildConfig)
             } |> ignore
             
-            *)
             // Start test
             configuration.DiagTool.ToolsToTest
             |> List.map (

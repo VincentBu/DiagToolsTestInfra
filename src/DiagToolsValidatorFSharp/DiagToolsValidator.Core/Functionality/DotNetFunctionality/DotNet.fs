@@ -79,7 +79,7 @@ module DotNet =
         ]
         let tarce = new Core.ProgressTraceBuilder(null)
         let SDKExtension = GetCompressionExtensionByRID rid
-        let downloadPath = Path.GetRandomFileName() + SDKExtension
+        let downloadPath = Path.GetTempFileName() + SDKExtension
         tarce {
             let! downloadLink = 
                 tarce {
@@ -95,7 +95,7 @@ module DotNet =
         }
 
 
-    let RunDotNetCommand (dotNetRoot: string)
+    let RunDotNetCommand (dotNetEnv: Dictionary<string, string>)
                          (argument: string)
                          (workDirectory: string)
                          (redirectStdOutErr: bool)
@@ -103,15 +103,12 @@ module DotNet =
                          (errorDataReceivedHandler: obj -> DataReceivedEventArgs -> unit) 
                          (waitForExit: bool)=
         let executableExtension = GetExcutableFileExtensionByRID CurrentRID
-        let dotNetExecutable = Path.Combine(dotNetRoot, $"dotnet{executableExtension}")
-
-        let environment = new Dictionary<string, string>()
-        environment["DOTNET_ROOT"] <- dotNetRoot
+        let dotNetExecutable = Path.Combine(dotNetEnv["DOTNET_ROOT"], $"dotnet{executableExtension}")
 
         RunCommand dotNetExecutable 
                    argument
                    workDirectory 
-                   environment 
+                   dotNetEnv 
                    redirectStdOutErr 
                    outputDataReceivedHandler 
                    errorDataReceivedHandler 

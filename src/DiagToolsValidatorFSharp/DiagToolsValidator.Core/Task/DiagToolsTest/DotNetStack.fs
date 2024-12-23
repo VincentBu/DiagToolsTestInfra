@@ -29,7 +29,7 @@ module DotNetStack =
                 $"{toolILPath} ps";
                 $"{toolILPath} report -p {webappInvoker.Proc.Id}";
             ] do
-                yield! DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                arguments
                                                configuration.TestResultFolder
                                                true

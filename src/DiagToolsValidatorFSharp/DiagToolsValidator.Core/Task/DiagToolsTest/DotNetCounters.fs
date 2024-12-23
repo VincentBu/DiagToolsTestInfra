@@ -30,7 +30,7 @@ module DotNetCounters =
                 $"{toolILPath} list";
                 $"{toolILPath} ps";
             ] do
-                yield! DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                arguments
                                                configuration.TestResultFolder
                                                true
@@ -42,7 +42,7 @@ module DotNetCounters =
                 $"{toolILPath} collect  -o webapp_counter.csv -p {webappInvoker.Proc.Id}";
                 $"{toolILPath} monitor -p {webappInvoker.Proc.Id}";
             ] do
-                let invokerResult = DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                let invokerResult = DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                        arguments
                                                        configuration.TestResultFolder
                                                        false
@@ -63,7 +63,7 @@ module DotNetCounters =
                 $"{toolILPath} collect -o console_counter.csv -- {consoleAppExecutable}";
                 $"{toolILPath} monitor -- {consoleAppExecutable}";
             ] do
-                yield! DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                arguments
                                                configuration.TestResultFolder
                                                false

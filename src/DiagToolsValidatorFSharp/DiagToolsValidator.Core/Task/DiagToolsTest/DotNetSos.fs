@@ -119,7 +119,7 @@ module DotNetSOS =
                 $"{toolILPath} uninstall";
                 $"{toolILPath} install";
             ] do
-                yield! DotNet.RunDotNetCommand configuration.DotNet.DotNetRoot
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                                arguments
                                                configuration.TestResultFolder
                                                true
