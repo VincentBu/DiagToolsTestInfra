@@ -26,7 +26,10 @@ module Core =
                     let errorMessage = new StringBuilder(ex.Message)
                     for entry in ex.Data |> Seq.cast<DictionaryEntry> do
                         errorMessage.AppendLine($"  {entry.Key.ToString()}: {entry.Value.ToString()}") |> ignore
+                        errorMessage.AppendLine("Stack Trace") |> ignore
                         errorMessage.AppendLine(ex.StackTrace) |> ignore
+                        errorMessage.AppendLine("Inner Exception") |> ignore
+                        errorMessage.AppendLine(ex.InnerException.ToString()) |> ignore
                     printfn "%s" (errorMessage.ToString())
 
                     if not (isNull(_loggerPath))
@@ -51,6 +54,8 @@ module Core =
                         this.AppendLineToLogger $"  {entry.Key.ToString()}: {entry.Value.ToString()}"
                     this.AppendLineToLogger "Stack Trace:"
                     this.AppendLineToLogger (ex.StackTrace)
+                    this.AppendLineToLogger "Inner Exception:"
+                    this.AppendLineToLogger (ex.InnerException.ToString())
                 | Choice1Of2 res ->
                     this.AppendLineToLogger $"Run command: {res.Command}"
                     this.AppendLineToLogger (res.StandardOutput.ToString())
@@ -67,6 +72,8 @@ module Core =
                         this.AppendLineToLogger $"  {entry.Key.ToString()}: {entry.Value.ToString()}"
                     this.AppendLineToLogger "Stack Trace:"
                     this.AppendLineToLogger (ex.StackTrace)
+                    this.AppendLineToLogger "Inner Exception:"
+                    this.AppendLineToLogger (ex.InnerException.ToString())
                 | Choice1Of2 _ -> ignore()
             x
             

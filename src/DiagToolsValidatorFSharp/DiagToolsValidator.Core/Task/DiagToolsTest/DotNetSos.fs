@@ -51,7 +51,6 @@ module DotNetSOS =
                 let preRunCommandList = List.Empty
                 let exitCommandList =
                     [
-                        $"session save {debugOutput}"
                         "exit";
                     ]
                 [preRunCommandList; BaseSOSCommandList; exitCommandList]
@@ -98,6 +97,7 @@ module DotNetSOS =
                                    CommandLineTool.IgnoreOutputData 
                                    CommandLineTool.IgnoreErrorData 
                                    true
+
 
     let TestDotNetSOS (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let toolName = "dotnet-sos"
