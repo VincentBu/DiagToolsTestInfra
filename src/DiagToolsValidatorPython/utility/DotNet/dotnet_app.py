@@ -4,7 +4,7 @@ from typing import Union
 
 from utility.cli import CommandInvoker
 from utility.system_info import SysInfo
-from utility.DotNet import infrastructure
+from utility.DotNet import dotnet
 
 class DotNetApp():
     def __init__(self,
@@ -40,7 +40,7 @@ class DotNetApp():
 
     def create_new_app(self) -> CommandInvoker:
         options = ['new', self.__app_template, '-o', self.__app_root, '--force']
-        invoker = infrastructure.run_dot_net_command(
+        invoker = dotnet.run_dot_net_command(
             self.__dotNet_root, options,
             wait_for_exit=True,
             silent_run=False
@@ -52,7 +52,7 @@ class DotNetApp():
             return Exception(f'Unknown build config for app building: {build_config}')
         
         options = ['build', '-c', build_config]
-        invoker = infrastructure.run_dot_net_command(
+        invoker = dotnet.run_dot_net_command(
             self.__dotNet_root,
             options,
             wait_for_exit=True,
@@ -66,7 +66,7 @@ class DotNetApp():
             return Exception(f'Unknown build config for app publishing: {build_config}')
         
         options = ['publish', '-c', build_config]
-        invoker = infrastructure.run_dot_net_command(
+        invoker = dotnet.run_dot_net_command(
             self.__dotNet_root,
             options,
             wait_for_exit=True,

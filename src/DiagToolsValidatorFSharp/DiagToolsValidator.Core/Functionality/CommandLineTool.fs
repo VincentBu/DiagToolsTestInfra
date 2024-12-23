@@ -1,5 +1,6 @@
 ﻿namespace DiagToolsValidator.Core.CoreFunctionality
 
+open System
 open System.Diagnostics
 open System.Text
 open System.Collections.Generic
@@ -24,6 +25,8 @@ module CommandLineTool =
         do proc.StartInfo.RedirectStandardError <- redirectStdOutErr
         do proc.StartInfo.WorkingDirectory <- workDirectory
 
+        do proc.StartInfo.EnvironmentVariables.Clear()
+        do proc.StartInfo.EnvironmentVariables["Path"] <- Environment.GetEnvironmentVariable("Path")
         do for key in environment.Keys do
             proc.StartInfo.EnvironmentVariables[key] <- environment[key]
 

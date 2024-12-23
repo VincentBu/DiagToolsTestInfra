@@ -3,7 +3,7 @@ import time
 
 import meta
 from utility import cli
-from utility.DotNet import dotnet_tool, infrastructure
+from utility.DotNet import dotnet, dotnet_tool
 from core_functionality.configuration.diagnostic_tools.diagnostic_tools_test_configuration import DiagToolTestCommandConfiguration
 
 
@@ -13,7 +13,7 @@ def install_dot_Net_SDK(configuration: DiagToolTestCommandConfiguration):
     msg = f'install .NET SDK {sdk_full_version} to {dotNet_root}'
     print(f'\n\n{msg}')
 
-    sdk_root = infrastructure.install_dot_net_SDK(sdk_full_version, dotNet_root)
+    sdk_root = dotnet.install_dot_net_SDK(sdk_full_version, dotNet_root)
     if isinstance(sdk_root, Exception):
         yield sdk_root
     else:

@@ -136,7 +136,7 @@ module DotNetSOS =
 
             let! webappInvoker = webappInvokerResult
 
-            yield! DebugAttachedProcessWithSOS configuration.Debugger 
+            yield! DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
                                                configuration.DotNet.DotNetRoot 
                                                debugProcessScript 
                                                (webappInvoker.Proc.Id.ToString())
@@ -150,7 +150,7 @@ module DotNetSOS =
             let dumpPath = 
                 Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
                 |> Array.head
-            yield! DebugDumpWithSOS configuration.Debugger
+            yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
                                     configuration.DotNet.DotNetRoot
                                     debugDumpScript
                                     dumpPath

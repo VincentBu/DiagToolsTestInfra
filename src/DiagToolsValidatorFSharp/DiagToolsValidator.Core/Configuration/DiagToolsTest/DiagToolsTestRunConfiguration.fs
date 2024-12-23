@@ -3,18 +3,22 @@
 open System
 open System.IO
 open System.Text
+open System.Runtime.InteropServices
 
 open YamlDotNet.Serialization
 
 open DiagToolsValidator.Core.CoreFunctionality
+open System.Collections.Generic
+open System.Collections
 
 
 module DiagToolsTestConfiguration =
     type SystemInformation() =
         member val OSName: string = null with get, set
         member val CPUArchitecture: string = null with get, set
-        member val Debugger: string = null with get, set
-    
+        member val EnvironmentVariables = new Dictionary<string, string>() with get, set
+        member val CLIDebugger: string = null with get, set
+        
     type DotNetSetting() =
         member val SDKVersion: string = null with get, set
         member val DotNetRoot: string = null with get, set
@@ -36,7 +40,6 @@ module DiagToolsTestConfiguration =
         member val TestBed: string = null with get, set
         member val TestResultFolder: string = null with get, set
         member val OptionalFeaturedContainer: bool = true with get, set
-        member val Debugger: string = null with get, set
         member val DotNet: DotNetSetting = new DotNetSetting() with get, set
         member val DiagTool: DiagToolSetting = new DiagToolSetting() with get, set
         member val TargetApp: TargetAppSetting = new TargetAppSetting() with get, set
@@ -61,11 +64,6 @@ module DiagToolsTestConfiguration =
                 then
                     parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify testbed")
                     raise(parseExn)
-
-                elif String.IsNullOrEmpty configuration.Debugger
-                then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify debugger")
-                    raise(parseExn)
                 
                 elif String.IsNullOrEmpty configuration.DiagTool.DiagToolVersion
                 then
@@ -85,6 +83,11 @@ module DiagToolsTestConfiguration =
                 elif String.IsNullOrEmpty configuration.SystemInfo.CPUArchitecture
                 then
                     parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify processor architecture")
+                    raise(parseExn)
+
+                elif String.IsNullOrEmpty configuration.SystemInfo.CLIDebugger
+                then
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify debugger")
                     raise(parseExn)
 
                 else 
@@ -117,6 +120,18 @@ module DiagToolsTestConfiguration =
                     configuration.TargetApp.GCDumpPlayground <- new DotNetApp.DotNetApp(configuration.DotNet.DotNetRoot,
                                                                                         "console",
                                                                                         Path.Combine(targetAppsRoot, "GCDumpPlayground"))
+                
+                    configuration.SystemInfo.EnvironmentVariables["DOTNET_ROOT"] <- configuration.DotNet.DotNetRoot
+                    for de: DictionaryEntry in Environment.GetEnvironmentVariables() |> Seq.cast<DictionaryEntry> do
+                        configuration.SystemInfo.EnvironmentVariables[de.Key.ToString()] <- de.Value.ToString()
+                    if RuntimeInformation.RuntimeIdentifier.Contains("win")
+                    then 
+                        configuration.SystemInfo.EnvironmentVariables["Path"] <- 
+                            Environment.GetEnvironmentVariable("Path") + $";{configuration.DotNet.DotNetRoot}"
+                    else
+                        configuration.SystemInfo.EnvironmentVariables["Path"] <- 
+                            Environment.GetEnvironmentVariable("Path") + $":{configuration.DotNet.DotNetRoot}"
+
                 configuration
             with ex -> 
                 ex.Data.Add(nameof(DiagToolsTestConfigurationParser), $"Fail to parse {path}")

@@ -20,7 +20,8 @@ module TestInfrastructure =
             ]
             else Path.Combine(configuration.TestBed, "env_activation.sh"),[
                 $"export DOTNET_ROOT={configuration.DotNet.DotNetRoot}";
-                $"export PATH=$PATH:{configuration.DotNet.DotNetRoot}"
+                $"export PATH=$PATH:{configuration.DotNet.DotNetRoot}";
+                $"export PATH=$PATH:{configuration.DiagTool.ToolRoot}"
             ]
 
         try
@@ -33,15 +34,13 @@ module TestInfrastructure =
 
     let RunWebapp (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let trace = new Core.ProgressTraceBuilder(null)
-        let env = new Dictionary<string, string>()
-        env["DOTNTE_ROOT"] <- configuration.DotNet.DotNetRoot
         let invokeResult = 
             trace {
                 let! executablePath = configuration.TargetApp.WebApp.GetAppExecutable(configuration.TargetApp.BuildConfig)
                 let! commandInvoker = CommandLineTool.RunCommand executablePath
                                                                  ""
                                                                  ""
-                                                                 env
+                                                                 configuration.SystemInfo.EnvironmentVariables
                                                                  true
                                                                  CommandLineTool.IgnoreOutputData
                                                                  CommandLineTool.IgnoreErrorData
@@ -62,15 +61,13 @@ module TestInfrastructure =
 
     let RunGCDumpPlayground (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let trace = new Core.ProgressTraceBuilder(null)
-        let env = new Dictionary<string, string>()
-        env["DOTNTE_ROOT"] <- configuration.DotNet.DotNetRoot
         let invokeResult = 
             trace {
                 let! executablePath = configuration.TargetApp.GCDumpPlayground.GetAppExecutable(configuration.TargetApp.BuildConfig)
                 let! commandInvoker = CommandLineTool.RunCommand executablePath
                                                                  "0.05"
                                                                  ""
-                                                                 env
+                                                                 configuration.SystemInfo.EnvironmentVariables
                                                                  true
                                                                  CommandLineTool.IgnoreOutputData
                                                                  CommandLineTool.IgnoreErrorData

@@ -1,6 +1,5 @@
 ﻿namespace DiagToolsValidator.Core.CoreFunctionality
 
-open System
 open System.IO
 open System.Net.Http
 open System.Diagnostics

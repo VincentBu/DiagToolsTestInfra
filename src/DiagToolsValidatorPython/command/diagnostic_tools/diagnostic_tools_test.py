@@ -6,7 +6,7 @@ from easycli import *
 from utility.logger import ProgressRecorder 
 from utility.logger import AppLogger
 from core_functionality.configuration.diagnostic_tools.diagnostic_tools_test_configuration import DiagToolTestCommandConfiguration
-from core_functionality.job.diagnostic_tools import initialize, test_dotnet_counters
+from core_functionality.job.diagnostic_tools import infrastructure, test_dotnet_counters
 
 
 class DiagToolTestCommandSetting(CommandSetting):

@@ -1,7 +1,7 @@
 import time
 from utility import cli
-from utility.DotNet import infrastructure, dotnet_tool
-from core_functionality.job.diagnostic_tools import initialize
+from utility.DotNet import dotnet, dotnet_tool
+from core_functionality.job.diagnostic_tools import infrastructure
 from core_functionality.configuration.diagnostic_tools.diagnostic_tools_test_configuration import DiagToolTestCommandConfiguration
 
 
@@ -14,7 +14,7 @@ def test_dotnet_counters(configuration: DiagToolTestCommandConfiguration):
     )
     yield tool_IL_path
 
-    webapp_invoker = initialize.run_webapp(configuration)
+    webapp_invoker = dotnet.run_webapp(configuration)
     yield webapp_invoker
 
     sync_options_list = [
@@ -23,7 +23,7 @@ def test_dotnet_counters(configuration: DiagToolTestCommandConfiguration):
         [tool_IL_path, 'ps'],
     ]
     for options in sync_options_list:
-        invoker = infrastructure.run_dot_net_command(
+        invoker = dotnet.run_dot_net_command(
             configuration.dotnet_root,
             options,
             wait_for_exit=True,
@@ -37,7 +37,7 @@ def test_dotnet_counters(configuration: DiagToolTestCommandConfiguration):
         [tool_IL_path, 'monitor', '-p', str(webapp_invoker.process.pid)],
     ]
     for options in async_args_list:
-        invoker = infrastructure.run_dot_net_command(
+        invoker = dotnet.run_dot_net_command(
             configuration.dotnet_root,
             options,
             redirect_out_err=False,
@@ -59,7 +59,7 @@ def test_dotnet_counters(configuration: DiagToolTestCommandConfiguration):
         [tool_IL_path, 'monitor', '--', console_app_executable],
     ]
     for options in async_args_list:
-        invoker = infrastructure.run_dot_net_command(
+        invoker = dotnet.run_dot_net_command(
             configuration.dotnet_root,
             options,
             redirect_out_err=False,

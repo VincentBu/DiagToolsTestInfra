@@ -3,7 +3,7 @@ from typing import Union
 from urllib import request
 
 from utility.cli import CommandInvoker
-from utility.DotNet import infrastructure
+from utility.DotNet import dotnet
 
 
 def install_tool(dotNet_root: str, 
@@ -18,7 +18,7 @@ def install_tool(dotNet_root: str,
         '--version', tool_version,
         '--add-source', tool_feed
     ]
-    invoker = infrastructure.run_dot_net_command(
+    invoker = dotnet.run_dot_net_command(
         dotNet_root, options,
         wait_for_exit=True,
         silent_run=False
