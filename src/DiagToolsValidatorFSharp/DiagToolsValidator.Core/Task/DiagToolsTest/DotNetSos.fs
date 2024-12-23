@@ -21,7 +21,7 @@ module DotNetSOS =
     ]
 
 
-    let GenerateDebugScript (debugOutput: string) (scriptRoot) =
+    let GenerateDebugScript (scriptRoot) =
         let debugCommandList = 
             if DotNet.CurrentRID.Contains("win")
             then
@@ -32,14 +32,12 @@ module DotNetSOS =
                         ".unload sos";
                         "sxe ld coreclr";
                         $".load {sosPluginPath}";
-                        $".logopen {debugOutput}"
                     ]
 
                 let winSOSCommandList = BaseSOSCommandList |> List.map (fun command -> $"!{command}")
                     
                 let exitCommandList =
                     [
-                        ".logclose";
                         ".detach";
                         "qq";
                     ]
@@ -129,8 +127,7 @@ module DotNetSOS =
         let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-process.txt")
         let processDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
         processDebuggingTrace {
-            let! debugProcessScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-process.txt"))
-                                                            configuration.TestBed
+            let! debugProcessScript = GenerateDebugScript configuration.TestBed
 
             let webappInvokerResult = TestInfrastructure.RunWebapp(configuration)
             yield! webappInvokerResult
@@ -150,8 +147,7 @@ module DotNetSOS =
         let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-dump.txt")
         let dumpDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
         dumpDebuggingTrace {
-            let! debugDumpScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-dump.txt"))
-                                                        configuration.TestBed
+            let! debugDumpScript = GenerateDebugScript configuration.TestBed
 
             let dumpPath = 
                 Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
