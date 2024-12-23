@@ -73,6 +73,26 @@ module DotNet =
 
 
     let InstallDotNetSDKByVersion (rid: string) (sdkFullVersion: string) (dotnetRoot: string) =
+        let IterateUntilSuccess(collection, f: 'a -> Choice<'b, exn>) =
+            let failedItems = new List<Choice<'b, exn>>()
+
+            let rec Iterate seq =
+                match seq with
+                | [] -> 
+                    if failedItems.Count = 0
+                    then
+                        Choice2Of2 (new exn("No item in collection."))
+                    else
+                        failedItems[0]
+                | x::xs -> 
+                    let result = f x
+                    match result with
+                    | Choice1Of2 _ -> result
+                    | Choice2Of2 ex -> 
+                        failedItems.Add(Choice2Of2 ex)
+                        Iterate xs
+            Iterate collection
+
         let AzureFeedList = [
             "https://dotnetcli.azureedge.net/dotnet";
             "https://dotnetbuilds.azureedge.net/public"
@@ -83,9 +103,9 @@ module DotNet =
         tarce {
             let! downloadLink = 
                 tarce {
-                    for feed in AzureFeedList do
-                        let! downloadLink = GenerateDownloadLink feed rid sdkFullVersion 
-                        return downloadLink
+                     return! IterateUntilSuccess(
+                        AzureFeedList,
+                        fun feed -> GenerateDownloadLink feed rid sdkFullVersion)
                 }
  
             let! downloadPath = DownloadCompressedDotNetSDK downloadLink downloadPath

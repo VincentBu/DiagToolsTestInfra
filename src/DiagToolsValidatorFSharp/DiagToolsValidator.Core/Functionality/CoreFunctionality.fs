@@ -3,7 +3,7 @@
 open System
 open System.Text
 open System.IO
-open System.Collections.Generic
+open System.Threading
 open System.IO.Compression
 open System.Formats.Tar
 open System.Collections
@@ -70,20 +70,21 @@ module Core =
                 | Choice1Of2 _ -> ignore()
             x
             
-        member this.Combine(a: Choice<CommandLineTool.CommandInvoker, exn>, b: unit -> Choice<CommandLineTool.CommandInvoker, exn>) =
-            match a with
-            | Choice2Of2 _ -> a
-            | Choice1Of2 invoker ->
-                if String.IsNullOrEmpty(invoker.StandardError.ToString())
-                then 
-                    b()
-                else 
-                    if not invoker.Proc.HasExited
-                    then 
-                        CommandLineTool.TerminateCommandInvoker(invoker) |> ignore
-                    a
+        //member this.Combine(a: Choice<CommandLineTool.CommandInvoker, exn>, b: unit -> Choice<CommandLineTool.CommandInvoker, exn>) =
+        //    match a with
+        //    | Choice2Of2 _ -> a
+        //    | Choice1Of2 invoker ->
+        //        if String.IsNullOrEmpty(invoker.StandardError.ToString())
+        //        then 
+        //            b()
+        //        else 
+        //            if not invoker.Proc.HasExited
+        //            then 
+        //                CommandLineTool.TerminateCommandInvoker(invoker) |> ignore
+        //            a
 
         member this.Combine(a: Choice<'a, exn>, b: unit -> Choice<'a, exn>) =
+            printfn "combine"
             match a with
             | Choice2Of2 _ -> a
             | Choice1Of2 _ -> b()
@@ -97,46 +98,23 @@ module Core =
         member this.Run(funToDelay) = 
             funToDelay()
 
-        member this.For(collection, f: 'a -> Choice<CommandLineTool.CommandInvoker, exn>) =
-            let SucceedItems = new List<Choice<CommandLineTool.CommandInvoker, exn>>()
-
-            let rec IterateUntilFail seq =
-                match seq with
-                | [] -> 
-                    if SucceedItems.Count = 0
-                    then
-                        this.Zero()
-                    else
-                        SucceedItems[0]
-                | x::xs -> 
-                    let result = f x
-                    match result with
-                    | Choice2Of2 _ -> result
-                    | Choice1Of2 _ -> 
-                        SucceedItems.Add(result)
-                        IterateUntilFail xs
-
-            IterateUntilFail collection
-
         member this.For(collection, f: 'a -> Choice<'b, exn>) =
-            let failedItems = new List<Choice<'b, exn>>()
+            let resultList =
+                collection
+                |> Seq.map (fun item -> f item)
+                |> List.ofSeq
 
-            let rec IterateUntilSuccess seq =
-                match seq with
-                | [] -> 
-                    if failedItems.Count = 0
-                    then
-                        Choice2Of2 (new exn("No item in collection."))
-                    else
-                        failedItems[0]
-                | x::xs -> 
-                    let result = f x
-                    match result with
-                    | Choice1Of2 _ -> result
-                    | Choice2Of2 ex -> 
-                        failedItems.Add(Choice2Of2 ex)
-                        IterateUntilSuccess xs
-            IterateUntilSuccess collection
+            let failedList =
+                resultList
+                |> List.filter (
+                    fun x ->
+                        match x with
+                        | Choice1Of2 _ -> false
+                        | Choice2Of2 _ -> true)
+
+            if failedList.Length = 0
+            then List.last resultList
+            else List.last failedList
 
 
     let CreateDirectory (path: string) =
@@ -178,3 +156,8 @@ module Core =
         with ex -> 
             ex.Data.Add("DecompressZip", $"Fail to decompress gzip file {zipPath} to {destinationFolder}")
             Choice2Of2 ex
+
+
+    let WaitUntil (p: unit -> bool) =
+        while not (p()) do
+            Thread.Sleep(1000)

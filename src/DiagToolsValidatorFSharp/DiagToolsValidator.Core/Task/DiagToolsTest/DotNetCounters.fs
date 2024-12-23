@@ -37,23 +37,23 @@ module DotNetCounters =
                                                CommandLineTool.PrinteOutputData
                                                CommandLineTool.PrintErrorData
                                                true
-            
+
             for arguments in [
                 $"{toolILPath} collect  -o webapp_counter.csv -p {webappInvoker.Proc.Id}";
                 $"{toolILPath} monitor -p {webappInvoker.Proc.Id}";
             ] do
                 let invokerResult = DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
-                                                       arguments
-                                                       configuration.TestResultFolder
-                                                       false
-                                                       CommandLineTool.IgnoreOutputData
-                                                       CommandLineTool.IgnoreErrorData
-                                                       false
+                                                            arguments
+                                                            configuration.TestResultFolder
+                                                            false
+                                                            CommandLineTool.IgnoreOutputData
+                                                            CommandLineTool.IgnoreErrorData
+                                                            false
                 Thread.Sleep(10000)
                 let! invoker = invokerResult
-                
-                CommandLineTool.TerminateCommandInvoker(invoker) |> ignore
-                yield! invokerResult
+                let terminateResult = CommandLineTool.TerminateCommandInvoker(invoker)
+                Thread.Sleep(5000)
+                yield! terminateResult
 
             CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
 
@@ -70,5 +70,6 @@ module DotNetCounters =
                                                CommandLineTool.IgnoreOutputData
                                                CommandLineTool.IgnoreErrorData
                                                true
+
         }
         

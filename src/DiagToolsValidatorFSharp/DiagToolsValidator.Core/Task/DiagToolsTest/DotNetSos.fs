@@ -48,20 +48,17 @@ module DotNetSOS =
                 |> List.concat
 
             else
-                
-                let preRunCommandList =
-                    [
-                        $"log enable -f {debugOutput} lldb all"
-                    ]
+                let preRunCommandList = List.Empty
                 let exitCommandList =
                     [
+                        $"session save {debugOutput}"
                         "exit";
                     ]
                 [preRunCommandList; BaseSOSCommandList; exitCommandList]
                 |> List.concat
         
         try
-            let debuggerScriptPath = Path.Combine(scriptRoot, "windbg-debug-script.txt")
+            let debuggerScriptPath = Path.Combine(scriptRoot, "debug-script.txt")
             File.WriteAllLines(debuggerScriptPath, debugCommandList)
             Choice1Of2 debuggerScriptPath
         with ex -> Choice2Of2 ex
@@ -102,7 +99,7 @@ module DotNetSOS =
                                    CommandLineTool.IgnoreErrorData 
                                    true
 
-    let TestDotNetSos (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
+    let TestDotNetSOS (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let toolName = "dotnet-sos"
         
         let env = new Dictionary<string, string>()
@@ -111,47 +108,58 @@ module DotNetSOS =
         let trace = new Core.ProgressTraceBuilder(loggerPath)
 
         trace {
-            let! toolILPath = DotNetTool.GetToolIL configuration.DiagTool.ToolRoot toolName configuration.DiagTool.DiagToolVersion
+            yield! trace {
+                let! toolILPath = DotNetTool.GetToolIL configuration.DiagTool.ToolRoot toolName configuration.DiagTool.DiagToolVersion
 
-            for arguments in [
-                $"{toolILPath} --help";
-                $"{toolILPath} install";
-                $"{toolILPath} uninstall";
-                $"{toolILPath} install";
-            ] do
-                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
-                                               arguments
-                                               configuration.TestResultFolder
-                                               true
-                                               CommandLineTool.PrinteOutputData
-                                               CommandLineTool.PrintErrorData
-                                               true
-            
+                for arguments in [
+                    $"{toolILPath} --help";
+                    $"{toolILPath} install";
+                    $"{toolILPath} uninstall";
+                    $"{toolILPath} install";
+                ] do
+                    yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
+                                                   arguments
+                                                   configuration.TestResultFolder
+                                                   true
+                                                   CommandLineTool.PrinteOutputData
+                                                   CommandLineTool.PrintErrorData
+                                                   true
+            }
+        
             // Attach to webapp
-            let! debugProcessScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-process.txt"))
-                                                          configuration.TestBed
+            let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-process.txt")
+            let processDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
+            yield! processDebuggingTrace {
+                let! debugProcessScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-process.txt"))
+                                                              configuration.TestBed
 
-            let webappInvokerResult = TestInfrastructure.RunWebapp(configuration)
-            yield! webappInvokerResult
+                let webappInvokerResult = TestInfrastructure.RunWebapp(configuration)
+                yield! webappInvokerResult
 
-            let! webappInvoker = webappInvokerResult
+                let! webappInvoker = webappInvokerResult
 
-            yield! DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
-                                               configuration.DotNet.DotNetRoot 
-                                               debugProcessScript 
-                                               (webappInvoker.Proc.Id.ToString())
+                let debugInvoker = DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
+                                                               configuration.DotNet.DotNetRoot 
+                                                               debugProcessScript 
+                                                               (webappInvoker.Proc.Id.ToString())
 
-            CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
-
+                CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
+                yield! debugInvoker
+            }
+        
             // Debug dump
-            let! debugDumpScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-dump.txt"))
-                                                       configuration.TestBed
+            let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-dump.txt")
+            let dumpDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
+            yield! dumpDebuggingTrace {
+                let! debugDumpScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-dump.txt"))
+                                                           configuration.TestBed
 
-            let dumpPath = 
-                Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
-                |> Array.head
-            yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
-                                    configuration.DotNet.DotNetRoot
-                                    debugDumpScript
-                                    dumpPath
+                let dumpPath = 
+                    Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
+                    |> Array.head
+                yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
+                                        configuration.DotNet.DotNetRoot
+                                        debugDumpScript
+                                        dumpPath
+            } 
         }

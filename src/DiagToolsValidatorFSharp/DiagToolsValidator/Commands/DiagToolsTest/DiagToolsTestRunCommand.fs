@@ -31,7 +31,7 @@ module DiagToolsTestRun =
                 ("dotnet-counters", DotNetCounters.TestDotNetCounters);
                 ("dotnet-dump", DotNetDump.TestDotNetDump);
                 ("dotnet-gcdump", DotNetGCDump.TestDotNetGCDump);
-                ("dotnet-sos", DotNetSOS.TestDotNetSos);
+                ("dotnet-sos", DotNetSOS.TestDotNetSOS);
                 ("dotnet-stack", DotNetStack.TestDotNetStack);
                 ("dotnet-trace", DotNetTrace.TestDotNetTrace);
             ]
@@ -66,7 +66,7 @@ module DiagToolsTestRun =
                 AnsiConsole.WriteLine()
                 for toolName in configuration.DiagTool.ToolsToTest do
                     trace.AppendLineToLogger $"Install {toolName} {configuration.DiagTool.DiagToolVersion} to {configuration.DiagTool.ToolRoot}"
-                    yield! DotNetTool.InstallDotNetTool dotNetRootInfo.FullName
+                    yield! DotNetTool.InstallDotNetTool configuration.SystemInfo.EnvironmentVariables
                                                         configuration.DiagTool.ToolRoot
                                                         configuration.DiagTool.Feed 
                                                         configuration.DiagTool.DiagToolVersion 

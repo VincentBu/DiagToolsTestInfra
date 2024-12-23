@@ -109,18 +109,7 @@ module DiagToolsTestConfiguration =
                     configuration.DotNet.DotNetRoot <- Path.Combine(configuration.TestBed, "dotnet-sdk")
 
                     configuration.DiagTool.ToolRoot <- Path.Combine(configuration.TestBed, "diag-tools")
-
-                    let targetAppsRoot = Path.Combine(configuration.TestBed, "TargetApps")
-                    configuration.TargetApp.ConsoleApp <- new DotNetApp.DotNetApp(configuration.DotNet.DotNetRoot,
-                                                                                  "console",
-                                                                                  Path.Combine(targetAppsRoot, "console"))
-                    configuration.TargetApp.WebApp <- new DotNetApp.DotNetApp(configuration.DotNet.DotNetRoot,
-                                                                              "webapp",
-                                                                              Path.Combine(targetAppsRoot, "webapp"))
-                    configuration.TargetApp.GCDumpPlayground <- new DotNetApp.DotNetApp(configuration.DotNet.DotNetRoot,
-                                                                                        "console",
-                                                                                        Path.Combine(targetAppsRoot, "GCDumpPlayground"))
-                
+                    
                     configuration.SystemInfo.EnvironmentVariables["DOTNET_ROOT"] <- configuration.DotNet.DotNetRoot
                     for de: DictionaryEntry in Environment.GetEnvironmentVariables() |> Seq.cast<DictionaryEntry> do
                         configuration.SystemInfo.EnvironmentVariables[de.Key.ToString()] <- de.Value.ToString()
@@ -131,6 +120,18 @@ module DiagToolsTestConfiguration =
                     else
                         configuration.SystemInfo.EnvironmentVariables["Path"] <- 
                             Environment.GetEnvironmentVariable("Path") + $":{configuration.DotNet.DotNetRoot}"
+
+                    let targetAppsRoot = Path.Combine(configuration.TestBed, "TargetApps")
+                    configuration.TargetApp.ConsoleApp <- new DotNetApp.DotNetApp(configuration.SystemInfo.EnvironmentVariables,
+                                                                                  "console",
+                                                                                  Path.Combine(targetAppsRoot, "console"))
+                    configuration.TargetApp.WebApp <- new DotNetApp.DotNetApp(configuration.SystemInfo.EnvironmentVariables,
+                                                                              "webapp",
+                                                                              Path.Combine(targetAppsRoot, "webapp"))
+                    configuration.TargetApp.GCDumpPlayground <- new DotNetApp.DotNetApp(configuration.SystemInfo.EnvironmentVariables,
+                                                                                        "console",
+                                                                                        Path.Combine(targetAppsRoot, "GCDumpPlayground"))
+                
 
                 configuration
             with ex -> 

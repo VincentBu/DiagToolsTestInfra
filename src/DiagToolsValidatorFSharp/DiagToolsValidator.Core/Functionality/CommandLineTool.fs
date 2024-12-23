@@ -4,6 +4,7 @@ open System
 open System.Diagnostics
 open System.Text
 open System.Collections.Generic
+open System.Threading
 
 
 module CommandLineTool =
@@ -109,6 +110,8 @@ module CommandLineTool =
         try
             commandInvoker.Proc.Kill(true)
             commandInvoker.Proc.WaitForExit()
+            while not (commandInvoker.Proc.HasExited) do
+                Thread.Sleep(1000)
             Choice1Of2 commandInvoker
         with ex ->
             ex.Data.Add("TerminateCommandInvoker", $"Fail to terminate process: {commandInvoker.Command}")
