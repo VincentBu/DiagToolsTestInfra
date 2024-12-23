@@ -107,59 +107,59 @@ module DotNetSOS =
         let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}.txt")
         let trace = new Core.ProgressTraceBuilder(loggerPath)
 
-        trace {
-            yield! trace {
-                let! toolILPath = DotNetTool.GetToolIL configuration.DiagTool.ToolRoot toolName configuration.DiagTool.DiagToolVersion
+        let result = trace {
+            let! toolILPath = DotNetTool.GetToolIL configuration.DiagTool.ToolRoot toolName configuration.DiagTool.DiagToolVersion
 
-                for arguments in [
-                    $"{toolILPath} --help";
-                    $"{toolILPath} install";
-                    $"{toolILPath} uninstall";
-                    $"{toolILPath} install";
-                ] do
-                    yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
-                                                   arguments
-                                                   configuration.TestResultFolder
-                                                   true
-                                                   CommandLineTool.PrinteOutputData
-                                                   CommandLineTool.PrintErrorData
-                                                   true
-            }
-        
-            // Attach to webapp
-            let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-process.txt")
-            let processDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
-            yield! processDebuggingTrace {
-                let! debugProcessScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-process.txt"))
-                                                              configuration.TestBed
-
-                let webappInvokerResult = TestInfrastructure.RunWebapp(configuration)
-                yield! webappInvokerResult
-
-                let! webappInvoker = webappInvokerResult
-
-                let debugInvoker = DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
-                                                               configuration.DotNet.DotNetRoot 
-                                                               debugProcessScript 
-                                                               (webappInvoker.Proc.Id.ToString())
-
-                CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
-                yield! debugInvoker
-            }
-        
-            // Debug dump
-            let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-dump.txt")
-            let dumpDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
-            yield! dumpDebuggingTrace {
-                let! debugDumpScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-dump.txt"))
-                                                           configuration.TestBed
-
-                let dumpPath = 
-                    Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
-                    |> Array.head
-                yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
-                                        configuration.DotNet.DotNetRoot
-                                        debugDumpScript
-                                        dumpPath
-            } 
+            for arguments in [
+                $"{toolILPath} --help";
+                $"{toolILPath} install";
+                $"{toolILPath} uninstall";
+                $"{toolILPath} install";
+            ] do
+                yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
+                                                arguments
+                                                configuration.TestResultFolder
+                                                true
+                                                CommandLineTool.PrinteOutputData
+                                                CommandLineTool.PrintErrorData
+                                                true
         }
+        
+        // Attach to webapp
+        let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-process.txt")
+        let processDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
+        processDebuggingTrace {
+            let! debugProcessScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-process.txt"))
+                                                            configuration.TestBed
+
+            let webappInvokerResult = TestInfrastructure.RunWebapp(configuration)
+            yield! webappInvokerResult
+
+            let! webappInvoker = webappInvokerResult
+
+            let debugInvoker = DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
+                                                            configuration.DotNet.DotNetRoot 
+                                                            debugProcessScript 
+                                                            (webappInvoker.Proc.Id.ToString())
+
+            CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
+            yield! debugInvoker
+        } |> ignore
+        
+        // Debug dump
+        let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-dump.txt")
+        let dumpDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
+        dumpDebuggingTrace {
+            let! debugDumpScript = GenerateDebugScript (Path.Combine(configuration.TestResultFolder, "debug-dump.txt"))
+                                                        configuration.TestBed
+
+            let dumpPath = 
+                Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
+                |> Array.head
+            yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
+                                    configuration.DotNet.DotNetRoot
+                                    debugDumpScript
+                                    dumpPath
+        } |> ignore
+
+        result

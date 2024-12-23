@@ -70,21 +70,20 @@ module Core =
                 | Choice1Of2 _ -> ignore()
             x
             
-        //member this.Combine(a: Choice<CommandLineTool.CommandInvoker, exn>, b: unit -> Choice<CommandLineTool.CommandInvoker, exn>) =
-        //    match a with
-        //    | Choice2Of2 _ -> a
-        //    | Choice1Of2 invoker ->
-        //        if String.IsNullOrEmpty(invoker.StandardError.ToString())
-        //        then 
-        //            b()
-        //        else 
-        //            if not invoker.Proc.HasExited
-        //            then 
-        //                CommandLineTool.TerminateCommandInvoker(invoker) |> ignore
-        //            a
+        member this.Combine(a: Choice<CommandLineTool.CommandInvoker, exn>, b: unit -> Choice<CommandLineTool.CommandInvoker, exn>) =
+            match a with
+            | Choice2Of2 _ -> a
+            | Choice1Of2 invoker ->
+                if String.IsNullOrEmpty(invoker.StandardError.ToString())
+                then 
+                    b()
+                else 
+                    if not invoker.Proc.HasExited
+                    then 
+                        CommandLineTool.TerminateCommandInvoker(invoker) |> ignore
+                    a
 
         member this.Combine(a: Choice<'a, exn>, b: unit -> Choice<'a, exn>) =
-            printfn "combine"
             match a with
             | Choice2Of2 _ -> a
             | Choice1Of2 _ -> b()
