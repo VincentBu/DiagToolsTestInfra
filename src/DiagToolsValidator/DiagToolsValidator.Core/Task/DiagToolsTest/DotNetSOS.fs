@@ -30,7 +30,6 @@ module DotNetSOS =
                 let preRunCommandList =
                     [
                         ".unload sos";
-                        "sxe ld coreclr";
                         $".load {sosPluginPath}";
                     ]
 
@@ -61,14 +60,12 @@ module DotNetSOS =
         with ex -> Choice2Of2 ex
 
 
-    let DebugDumpWithSOS (debugger: string) (dotNetRoot: string) (debuggerScriptPath: string) (dumpPath: string) =
+    let DebugDumpWithSOS (debugger: string) (env: Dictionary<string, string>) (debuggerScriptPath: string) (dumpPath: string) =
         let arguments = 
             if DotNet.CurrentRID.Contains("win")
             then $"-cf {debuggerScriptPath} -z {dumpPath}"
             else $"-c {dumpPath} -s {debuggerScriptPath}"
 
-        let env = new Dictionary<string, string>()
-        env["DOTNTE_ROOT"] <- dotNetRoot
         CommandLineTool.RunCommand debugger 
                                    arguments 
                                    "" 
@@ -79,14 +76,15 @@ module DotNetSOS =
                                    true
 
 
-    let DebugAttachedProcessWithSOS (debugger: string) (dotNetRoot: string) (debuggerScriptPath: string) (pid: string) =
+    let DebugAttachedProcessWithSOS (debugger: string) 
+                                    (env: Dictionary<string, string>)
+                                    (debuggerScriptPath: string)
+                                    (pid: string) =
         let arguments = 
             if DotNet.CurrentRID.Contains("win")
             then $"-cf {debuggerScriptPath} -p {pid}"
             else $"-s {debuggerScriptPath} -p {pid}"
 
-        let env = new Dictionary<string, string>()
-        env["DOTNTE_ROOT"] <- dotNetRoot
         CommandLineTool.RunCommand debugger 
                                    arguments 
                                    "" 
@@ -135,9 +133,9 @@ module DotNetSOS =
             let! webappInvoker = webappInvokerResult
 
             let debugInvoker = DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
-                                                            configuration.DotNet.DotNetRoot 
-                                                            debugProcessScript 
-                                                            (webappInvoker.Proc.Id.ToString())
+                                                           configuration.SystemInfo.EnvironmentVariables 
+                                                           debugProcessScript 
+                                                           (webappInvoker.Proc.Id.ToString())
 
             CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
             yield! debugInvoker
@@ -153,7 +151,7 @@ module DotNetSOS =
                 Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
                 |> Array.head
             yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
-                                    configuration.DotNet.DotNetRoot
+                                    configuration.SystemInfo.EnvironmentVariables 
                                     debugDumpScript
                                     dumpPath
         } |> ignore
