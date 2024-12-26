@@ -69,6 +69,7 @@ module DiagToolsTestRun =
                     yield! DotNetTool.InstallDotNetTool configuration.SystemInfo.EnvironmentVariables
                                                         configuration.DiagTool.ToolRoot
                                                         configuration.DiagTool.Feed 
+                                                        ""
                                                         configuration.DiagTool.DiagToolVersion 
                                                         toolName
 

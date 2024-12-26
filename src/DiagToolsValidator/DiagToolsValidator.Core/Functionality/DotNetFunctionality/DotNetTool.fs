@@ -21,10 +21,15 @@ module DotNetTool =
     let InstallDotNetTool (dotNetEnv: Dictionary<string, string>)
                           (toolRoot: string)
                           (toolFeed: string)
+                          (configFilePath: string) 
                           (toolVersion: string) 
                           (toolName: string) =
+        let argument = 
+            if Path.Exists(configFilePath)
+            then $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed} --configfile {configFilePath}"
+            else $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
         DotNet.RunDotNetCommand dotNetEnv 
-                                $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
+                                argument
                                 ""
                                 true
                                 CommandLineTool.PrinteOutputData
