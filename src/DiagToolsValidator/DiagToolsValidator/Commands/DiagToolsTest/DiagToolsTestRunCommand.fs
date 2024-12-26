@@ -11,9 +11,6 @@ open DiagToolsValidator.Core.CoreFunctionality
 open DiagToolsValidator.Core.Task.DiagToolsTest
 
 module DiagToolsTestRun =
-    let RID = RuntimeInformation.RuntimeIdentifier
-
-
     type DiagToolsTestRunSettings() =
         inherit CommandSettings()
 
@@ -40,7 +37,7 @@ module DiagToolsTestRun =
         override this.Execute(context: CommandContext, setting: DiagToolsTestRunSettings) =
             AnsiConsole.Write((new FigletText("Diagnostic Tools Test")).Centered().Color(Color.Red))
 
-            let configuration = DiagToolsTestConfiguration.DiagToolsTestConfigurationParser.GenerateConfigFile setting.ConfigurationPath
+            let configuration = DiagToolsTestConfiguration.DiagToolsTestConfigurationGenerator.GenerateConfiguration setting.ConfigurationPath
             
             // Create testbed and test result folder
             Core.CreateDirectory configuration.TestResultFolder |> ignore

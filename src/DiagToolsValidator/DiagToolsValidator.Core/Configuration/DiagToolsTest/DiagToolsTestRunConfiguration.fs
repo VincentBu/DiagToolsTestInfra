@@ -3,13 +3,13 @@
 open System
 open System.IO
 open System.Text
+open System.Collections
+open System.Collections.Generic
 open System.Runtime.InteropServices
 
 open YamlDotNet.Serialization
 
 open DiagToolsValidator.Core.CoreFunctionality
-open System.Collections.Generic
-open System.Collections
 
 
 module DiagToolsTestConfiguration =
@@ -46,9 +46,9 @@ module DiagToolsTestConfiguration =
         member val SystemInfo: SystemInformation = new SystemInformation() with get, set
 
     [<AbstractClass;Sealed>]
-    type DiagToolsTestConfigurationParser private() =
+    type DiagToolsTestConfigurationGenerator private() =
 
-        static member GenerateConfigFile(path: string) = 
+        static member GenerateConfiguration(path: string) = 
             let _deserializer = (new DeserializerBuilder()).IgnoreUnmatchedProperties().Build()
             let serializedConfiguration = File.ReadAllText(path)
 
@@ -57,37 +57,37 @@ module DiagToolsTestConfiguration =
                 let parseExn = new exn()
                 if String.IsNullOrEmpty configuration.DotNet.SDKVersion
                 then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify .NET SDK version")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify .NET SDK version")
                     raise(parseExn)
                 
                 elif String.IsNullOrEmpty configuration.TestBed
                 then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify testbed")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify testbed")
                     raise(parseExn)
                 
                 elif String.IsNullOrEmpty configuration.DiagTool.DiagToolVersion
                 then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify diag tool version")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify diag tool version")
                     raise(parseExn)
                 
                 elif String.IsNullOrEmpty configuration.DiagTool.Feed
                 then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify diag tool feed")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify diag tool feed")
                     raise(parseExn)
 
                 elif String.IsNullOrEmpty configuration.SystemInfo.OSName
                 then 
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify os name")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify os name")
                     raise(parseExn)
                 
                 elif String.IsNullOrEmpty configuration.SystemInfo.CPUArchitecture
                 then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify processor architecture")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify processor architecture")
                     raise(parseExn)
 
                 elif String.IsNullOrEmpty configuration.SystemInfo.CLIDebugger
                 then
-                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationParser), "Please specify debugger")
+                    parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify debugger")
                     raise(parseExn)
 
                 else 
@@ -134,8 +134,7 @@ module DiagToolsTestConfiguration =
                 
 
                 configuration
-            with ex -> 
-                ex.Data.Add(nameof(DiagToolsTestConfigurationParser), $"Fail to parse {path}")
+            with _ -> 
                 reraise()
          
             
