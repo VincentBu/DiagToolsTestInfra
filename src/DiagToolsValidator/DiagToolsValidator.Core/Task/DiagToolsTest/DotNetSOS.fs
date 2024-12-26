@@ -98,8 +98,6 @@ module DotNetSOS =
     let TestDotNetSOS (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let toolName = "dotnet-sos"
         
-        let env = new Dictionary<string, string>()
-        env["DOTNTE_ROOT"] <- configuration.DotNet.DotNetRoot
         let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}.txt")
         let trace = new Core.ProgressTraceBuilder(loggerPath)
 
