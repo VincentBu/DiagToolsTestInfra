@@ -2,10 +2,9 @@
 
 open System
 open System.IO
-open System.Collections.Generic
 
 open DiagToolsValidator.Core.Configuration
-open DiagToolsValidator.Core.CoreFunctionality
+open DiagToolsValidator.Core.Functionality
 
 module DotNetSOS =
     let BaseSOSCommandList = [
@@ -60,41 +59,6 @@ module DotNetSOS =
         with ex -> Choice2Of2 ex
 
 
-    let DebugDumpWithSOS (debugger: string) (env: Dictionary<string, string>) (debuggerScriptPath: string) (dumpPath: string) =
-        let arguments = 
-            if DotNet.CurrentRID.Contains("win")
-            then $"-cf {debuggerScriptPath} -z {dumpPath}"
-            else $"-c {dumpPath} -s {debuggerScriptPath}"
-
-        CommandLineTool.RunCommand debugger 
-                                   arguments 
-                                   "" 
-                                   env 
-                                   true 
-                                   CommandLineTool.IgnoreOutputData 
-                                   CommandLineTool.IgnoreErrorData 
-                                   true
-
-
-    let DebugAttachedProcessWithSOS (debugger: string) 
-                                    (env: Dictionary<string, string>)
-                                    (debuggerScriptPath: string)
-                                    (pid: string) =
-        let arguments = 
-            if DotNet.CurrentRID.Contains("win")
-            then $"-cf {debuggerScriptPath} -p {pid}"
-            else $"-s {debuggerScriptPath} -p {pid}"
-
-        CommandLineTool.RunCommand debugger 
-                                   arguments 
-                                   "" 
-                                   env 
-                                   true 
-                                   CommandLineTool.IgnoreOutputData 
-                                   CommandLineTool.IgnoreErrorData 
-                                   true
-
-
     let TestDotNetSOS (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let toolName = "dotnet-sos"
         
@@ -111,12 +75,12 @@ module DotNetSOS =
                 $"{toolILPath} install";
             ] do
                 yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
-                                                arguments
-                                                configuration.TestResultFolder
-                                                true
-                                                CommandLineTool.PrinteOutputData
-                                                CommandLineTool.PrintErrorData
-                                                true
+                                               arguments
+                                               configuration.TestResultFolder
+                                               true
+                                               CommandLineTool.PrinteOutputData
+                                               CommandLineTool.PrintErrorData
+                                               true
         }
         
         // Attach to webapp
@@ -130,7 +94,7 @@ module DotNetSOS =
 
             let! webappInvoker = webappInvokerResult
 
-            let debugInvoker = DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
+            let debugInvoker = Debugging.DebugAttachedProcessWithSOS configuration.SystemInfo.CLIDebugger 
                                                            configuration.SystemInfo.EnvironmentVariables 
                                                            debugProcessScript 
                                                            (webappInvoker.Proc.Id.ToString())
@@ -148,10 +112,10 @@ module DotNetSOS =
             let dumpPath = 
                 Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
                 |> Array.head
-            yield! DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
-                                    configuration.SystemInfo.EnvironmentVariables 
-                                    debugDumpScript
-                                    dumpPath
+            yield! Debugging.DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
+                                              configuration.SystemInfo.EnvironmentVariables 
+                                              debugDumpScript
+                                              dumpPath
         } |> ignore
 
         result

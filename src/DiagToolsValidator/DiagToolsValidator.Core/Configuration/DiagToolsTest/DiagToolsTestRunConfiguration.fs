@@ -9,7 +9,7 @@ open System.Runtime.InteropServices
 
 open YamlDotNet.Serialization
 
-open DiagToolsValidator.Core.CoreFunctionality
+open DiagToolsValidator.Core.Functionality
 
 
 module DiagToolsTestConfiguration =

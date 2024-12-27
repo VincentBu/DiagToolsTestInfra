@@ -1,13 +1,12 @@
 ﻿namespace DiagToolsValidationToolSet.Command
 
 open System.IO
-open System.Runtime.InteropServices
 
 open Spectre.Console
 open Spectre.Console.Cli
 
 open DiagToolsValidator.Core.Configuration
-open DiagToolsValidator.Core.CoreFunctionality
+open DiagToolsValidator.Core.Functionality
 open DiagToolsValidator.Core.Task.DiagToolsTest
 
 module DiagToolsTestRun =

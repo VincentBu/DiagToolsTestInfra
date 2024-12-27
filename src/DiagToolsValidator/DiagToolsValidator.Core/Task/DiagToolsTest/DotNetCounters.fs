@@ -5,7 +5,7 @@ open System.Threading
 open System.Collections.Generic
 
 open DiagToolsValidator.Core.Configuration
-open DiagToolsValidator.Core.CoreFunctionality
+open DiagToolsValidator.Core.Functionality
 
 
 module DotNetCounters =

@@ -2,10 +2,9 @@
 
 open System
 open System.IO
-open System.Collections.Generic
 open System.Threading
 
-open DiagToolsValidator.Core.CoreFunctionality
+open DiagToolsValidator.Core.Functionality
 open DiagToolsValidator.Core.Configuration
 
 

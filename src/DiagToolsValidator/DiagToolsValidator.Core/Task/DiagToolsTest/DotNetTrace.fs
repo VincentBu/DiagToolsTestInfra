@@ -4,7 +4,7 @@ open System.IO
 open System.Collections.Generic
 
 open DiagToolsValidator.Core.Configuration
-open DiagToolsValidator.Core.CoreFunctionality
+open DiagToolsValidator.Core.Functionality
 
 module DotNetTrace =
     let TestDotNetTrace (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
