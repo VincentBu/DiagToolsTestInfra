@@ -77,7 +77,7 @@ module DebuggerExtensionTestRun =
                         yield! configuration.TargetApp.NativeAOTApp.PublishApp(configuration.TargetApp.BuildConfig)
                         
                         // Install dotnet-debugger-extensions
-                        AnsiConsole.Write(new Rule($"Install diagnostic tools({configuration.DotNet.SDKVersion})"))
+                        AnsiConsole.Write(new Rule($"Install dotnet-debugger-extensions({configuration.DotNet.SDKVersion})"))
                         AnsiConsole.WriteLine()
                         let toolName = "dotnet-debugger-extensions"
                         trace.AppendLineToLogger $"Install {toolName} {configuration.DebuggerExtension.ToolVersion} to {configuration.DebuggerExtension.ToolRoot}"
