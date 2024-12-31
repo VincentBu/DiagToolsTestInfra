@@ -86,49 +86,35 @@ module TestInfrastructure =
             Choice1Of2 _env
 
 
+    let DeactiveDumpGeneratingEnvironment (env: Dictionary<string, string>) =
+        let _env = new Dictionary<string, string>(env)
+        if DotNet.CurrentRID.Contains("win")
+        then // windows case: delete reg keys
+            try
+                let registrykeyHKLM = Registry.CurrentUser
+                let keyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+
+                registrykeyHKLM.DeleteSubKey($@"{keyPath}\DumpFolder", false)
+                registrykeyHKLM.DeleteSubKey($@"{keyPath}\DumpType", false)
+                Choice1Of2 _env
+            with ex ->
+                ex.Data.Add("", $"Fail to delete registry key.")
+                Choice2Of2 ex
+        else
+            _env["DOTNET_DbgEnableMiniDump"] <- "0"
+            Choice1Of2 _env
+
+
     let ActiveStressLogEnvironment (env: Dictionary<string, string>) =
         let _env = new Dictionary<string, string>(env)
         _env["DOTNET_StressLogLevel"] <- "10"
         _env["DOTNET_TotalStressLogSize"] <- "8196"
         _env
         
-
-    let RunNativeAOTApp (configuration: DebuggerExtensionTestConfiguration.DebuggerExtensionTestRunConfiguration) =
-        let trace = new Core.ProgressTraceBuilder(null)
-
-        trace {
-            let! env = ActiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables configuration.TestResultFolder
-            let env = ActiveStressLogEnvironment env
-            let! executablePath = configuration.TargetApp.NativeAOTApp.GetAppNativeExecutable configuration.TargetApp.BuildConfig
-            
-            let! srcCreateDumpPath = configuration.TargetApp.NativeAOTApp.GetCreateDump configuration.TargetApp.BuildConfig
-            let! nativeSymbolFolder = configuration.TargetApp.NativeAOTApp.GetNativeSymbolFolder configuration.TargetApp.BuildConfig
-            Core.CopyFile srcCreateDumpPath nativeSymbolFolder |> ignore
-
-            let invoker = CommandLineTool.RunCommand executablePath
-                                                     ""
-                                                     ""
-                                                     env
-                                                     true
-                                                     CommandLineTool.IgnoreOutputData
-                                                     CommandLineTool.IgnoreErrorData
-                                                     true
              
-            if DotNet.CurrentRID.Contains("win")
-            then // windows case: delete reg keys
-                let registrykeyHKLM = Registry.CurrentUser
-                let keyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+    let GetDump (configuration: DebuggerExtensionTestConfiguration.DebuggerExtensionTestRunConfiguration) = 
+        let dumpFileList = Directory.GetFiles(configuration.TestResultFolder, "*.dmp")
 
-                registrykeyHKLM.DeleteSubKey($@"{keyPath}\DumpFolder", false)
-                registrykeyHKLM.DeleteSubKey($@"{keyPath}\DumpType", false)
-            |> ignore
-            
-            let dumpFileList = Directory.GetFiles(configuration.TestResultFolder, "*.dmp")
-
-            let! dumpPath = 
-                if Array.isEmpty dumpFileList
-                then Choice2Of2 (new exn("No dump is generated"))
-                else Choice1Of2 (dumpFileList[0])
-
-            return dumpPath
-        }
+        if Array.isEmpty dumpFileList
+        then Choice2Of2 (new exn("No dump is generated"))
+        else Choice1Of2 (dumpFileList[0])

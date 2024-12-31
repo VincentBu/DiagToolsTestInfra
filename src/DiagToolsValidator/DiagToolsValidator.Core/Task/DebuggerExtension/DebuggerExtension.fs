@@ -25,30 +25,54 @@ module DebuggerExtension =
         // Install debugger-extension
         let result = 
             trace {
-                let! toolILPath = DotNetTool.GetToolIL configuration.DebuggerExtension.ToolRoot toolName configuration.DebuggerExtension.ToolVersion
+                let! toolILPath = DotNetTool.GetToolIL configuration.DebuggerExtension.ToolRoot 
+                                                       toolName 
+                                                       configuration.DebuggerExtension.ToolVersion
                 trace.AppendLineToLogger($"Install {toolName}")
                 yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
-                                                $"{toolILPath} install --accept-license-agreement"
-                                                configuration.TestResultFolder
-                                                true
-                                                CommandLineTool.IgnoreErrorData
-                                                CommandLineTool.IgnoreErrorData
-                                                true
+                                               $"{toolILPath} install --accept-license-agreement"
+                                               configuration.TestResultFolder
+                                               true
+                                               CommandLineTool.IgnoreErrorData
+                                               CommandLineTool.IgnoreErrorData
+                                               true
             }
         
         // Debug dump
+        let dumpDebugResultFolder = Path.Combine(configuration.TestResultFolder, "DebugDump")
+        Core.CreateDirectory dumpDebugResultFolder |> ignore
+
         let dumpDebuggingLoggerPath = Path.Combine(configuration.TestResultFolder, $"dump-debugging.txt")
         let dumpDebuggingTrace = new Core.ProgressTraceBuilder(dumpDebuggingLoggerPath)
-        let resultFolder = Path.Combine(configuration.TestResultFolder, "DebugDump")
         dumpDebuggingTrace {
-            let! resultFolderInfo = Core.CreateDirectory resultFolder
-            let debuggerScriptPath = Path.Combine(resultFolderInfo.FullName, "debug-script.txt")
+            let debuggerScriptPath = Path.Combine(dumpDebugResultFolder, "debug-script.txt")
             let! debugDumpScript = Debugging.GenerateDebugScript SOSCommandList debuggerScriptPath
-            // Generate dump
-            let! dumpPath = TestInfrastructure.RunNativeAOTApp configuration
+            // Initialize dump generating env
+            let! env = TestInfrastructure.ActiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables 
+                                                                          configuration.TestResultFolder
+            let env = TestInfrastructure.ActiveStressLogEnvironment env
+
+            let! srcCreateDumpPath = configuration.TargetApp.NativeAOTApp.GetCreateDump configuration.TargetApp.BuildConfig
+            let! nativeSymbolFolder = configuration.TargetApp.NativeAOTApp.GetNativeSymbolFolder configuration.TargetApp.BuildConfig
+            Core.CopyFile srcCreateDumpPath nativeSymbolFolder |> ignore
+
+            // Run nativeaot app
+            let! executablePath = configuration.TargetApp.NativeAOTApp.GetAppNativeExecutable configuration.TargetApp.BuildConfig
+            CommandLineTool.RunCommand executablePath
+                                       ""
+                                       ""
+                                       env
+                                       true
+                                       CommandLineTool.IgnoreOutputData
+                                       CommandLineTool.IgnoreErrorData
+                                       true
+            |> ignore
+
+            let! dumpPath = TestInfrastructure.GetDump configuration
+            // Debug dump
             yield! Debugging.DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
                                               configuration.SystemInfo.EnvironmentVariables
-                                              resultFolderInfo.FullName
+                                              dumpDebugResultFolder
                                               debugDumpScript
                                               dumpPath
         } |> ignore
@@ -69,4 +93,7 @@ module DebuggerExtension =
                                                     debugLaunchableScript
                                                     executablePath
         } |> ignore
+
+        TestInfrastructure.DeactiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables |> ignore
+
         result
