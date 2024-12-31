@@ -1,4 +1,4 @@
-﻿namespace DiagToolsValidator.Core.CoreFunctionality
+﻿namespace DiagToolsValidator.Core.Functionality
 
 open System
 open System.IO
@@ -37,13 +37,27 @@ module DotNetApp =
             let trace = new Core.ProgressTraceBuilder(null)
             trace {
                 let! targetFramework = x.GetTargetFramework
-                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework)
+                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework, DotNet.CurrentRID)
                 if Path.Exists(appSymbolFolder)
                 then 
                     return appSymbolFolder
                 else 
                     let ex = new Exception("Fail to get .NET app symbol folder")
                     ex.Data.Add("DotNetApp.GetAppSymbolFolder", $"Expected symbol folder {appSymbolFolder} doesn't exsit")
+                    return! Choice2Of2 ex
+            }
+
+        member x.GetNativeSymbolFolder (buildConfig: string) =
+            let trace = new Core.ProgressTraceBuilder(null)
+            trace {
+                let! targetFramework = x.GetTargetFramework
+                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework, DotNet.CurrentRID, "publish")
+                if Path.Exists(appSymbolFolder)
+                then 
+                    return appSymbolFolder
+                else 
+                    let ex = new Exception("Fail to get .NET app native symbol folder")
+                    ex.Data.Add("DotNetApp.GetNativeSymbolFolder", $"Expected native symbol folder {appSymbolFolder} doesn't exsit")
                     return! Choice2Of2 ex
             }
 
@@ -64,6 +78,38 @@ module DotNetApp =
                     return! Choice2Of2 ex
             }
             
+        member x.GetAppNativeExecutable (buildConfig: string) =
+            let trace = new Core.ProgressTraceBuilder(null)
+            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID DotNet.CurrentRID
+            trace {
+                let! symbolFolder = x.GetNativeSymbolFolder(buildConfig)
+                let projectFile = x.GetProjectFile
+                let appName = Path.GetFileNameWithoutExtension(projectFile)
+                let excutable = Path.Combine(symbolFolder, $"{appName}{excutableFileExtension}")
+                if Path.Exists(excutable)
+                then 
+                    return excutable
+                else 
+                    let ex = new Exception("Fail to get .NET app native excutable file")
+                    ex.Data.Add("DotNetApp.GetAppNativeExecutable", $"Native excutable file {excutable} doesn't exsit")
+                    return! Choice2Of2 ex
+            }
+
+        member x.GetCreateDump (buildConfig: string) =
+            let trace = new Core.ProgressTraceBuilder(null)
+            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID DotNet.CurrentRID
+            trace {
+                let! symbolFolder = x.GetSymbolFolder(buildConfig)
+                let createDump = Path.Combine(symbolFolder, $"createdump{excutableFileExtension}")
+                if Path.Exists(createDump)
+                then 
+                    return createDump
+                else 
+                    let ex = new Exception("Fail to get createadump for .NET app")
+                    ex.Data.Add("DotNetApp.GetCreateDump", $"{createDump} doesn't exsit")
+                    return! Choice2Of2 ex
+            }
+            
         member x.CreateApp () =
             DotNet.RunDotNetCommand _dotNetEnv 
                                     $"new {_appTemplate} -o {_appRoot} --force"
@@ -75,7 +121,7 @@ module DotNetApp =
 
         member x.BuildApp (buildConfig: string) =
             DotNet.RunDotNetCommand _dotNetEnv
-                                    $"build -c {buildConfig}"
+                                    $"build -r {DotNet.CurrentRID} -c {buildConfig}"
                                     appRoot 
                                     true 
                                     CommandLineTool.PrinteOutputData 

@@ -2,7 +2,7 @@
   "profiles": {
     "DiagToolsValidator": {
       "commandName": "Project",
-      "commandLineArgs": "diagtoolstest-run -c \"C:\\Workspace\\DiagTool\\TestOutput\\DiagToolsTest.yaml\"",
+      "commandLineArgs": "debuggerexttest-run -c \"C:\\Workspace\\DiagTool\\DebuggerExt\\DebuggerExtensionTest.yaml\"",
       "remoteDebugEnabled": false
     },
     "WSL": {

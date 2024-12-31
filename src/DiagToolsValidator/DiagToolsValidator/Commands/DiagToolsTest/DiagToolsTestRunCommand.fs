@@ -1,4 +1,4 @@
-﻿namespace DiagToolsValidationToolSet.Command
+﻿namespace DiagToolsValidator.Command
 
 open System.IO
 

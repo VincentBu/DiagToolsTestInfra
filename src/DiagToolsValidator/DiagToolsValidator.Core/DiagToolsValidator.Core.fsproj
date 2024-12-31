@@ -11,7 +11,11 @@
     <Compile Include="Functionality\DotNetFunctionality\DotNet.fs" />
     <Compile Include="Functionality\DotNetFunctionality\DotNetApp.fs" />
     <Compile Include="Functionality\DotNetFunctionality\DotNetTool.fs" />
+    <Compile Include="Functionality\Debugging.fs" />
+    <Compile Include="Configuration\DebuggerExtensionTest\DebuggerExtensionTestRunConfiguration.fs" />
     <Compile Include="Configuration\DiagToolsTest\DiagToolsTestRunConfiguration.fs" />
+    <Compile Include="Task\DebuggerExtension\Infrastructure.fs" />
+    <Compile Include="Task\DebuggerExtension\DebuggerExtension.fs" />
     <Compile Include="Task\DiagToolsTest\Infrastructure.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetCounters.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetDump.fs" />
@@ -24,10 +28,6 @@
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
     <PackageReference Include="YamlDotNet" Version="16.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Task\DebuggerExtension\" />
   </ItemGroup>
 
 </Project>

@@ -20,45 +20,6 @@ module DotNetSOS =
     ]
 
 
-    let GenerateDebugScript (scriptRoot) =
-        let debugCommandList = 
-            if DotNet.CurrentRID.Contains("win")
-            then
-                let userProfile = Environment.GetEnvironmentVariable("USERPROFILE")
-                let sosPluginPath = Path.Combine(userProfile, ".dotnet", "sos", "sos.dll")
-                let preRunCommandList =
-                    [
-                        ".unload sos";
-                        $".load {sosPluginPath}";
-                    ]
-
-                let winSOSCommandList = BaseSOSCommandList |> List.map (fun command -> $"!{command}")
-                    
-                let exitCommandList =
-                    [
-                        ".detach";
-                        "qq";
-                    ]
-                     
-                [preRunCommandList; winSOSCommandList; exitCommandList]
-                |> List.concat
-
-            else
-                let preRunCommandList = List.Empty
-                let exitCommandList =
-                    [
-                        "exit";
-                    ]
-                [preRunCommandList; BaseSOSCommandList; exitCommandList]
-                |> List.concat
-        
-        try
-            let debuggerScriptPath = Path.Combine(scriptRoot, "debug-script.txt")
-            File.WriteAllLines(debuggerScriptPath, debugCommandList)
-            Choice1Of2 debuggerScriptPath
-        with ex -> Choice2Of2 ex
-
-
     let TestDotNetSOS (configuration: DiagToolsTestConfiguration.DiagToolsTestConfiguration) =
         let toolName = "dotnet-sos"
         
@@ -87,7 +48,8 @@ module DotNetSOS =
         let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-process.txt")
         let processDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
         processDebuggingTrace {
-            let! debugProcessScript = GenerateDebugScript configuration.TestBed
+            let debuggerScriptPath = Path.Combine(configuration.TestBed, "debug-script.txt")
+            let! debugProcessScript = Debugging.GenerateDebugScript BaseSOSCommandList debuggerScriptPath
 
             let webappInvokerResult = TestInfrastructure.RunWebapp(configuration)
             yield! webappInvokerResult
@@ -107,13 +69,15 @@ module DotNetSOS =
         let loggerPath = Path.Combine(configuration.TestResultFolder, $"{toolName}-debug-dump.txt")
         let dumpDebuggingTrace = new Core.ProgressTraceBuilder(loggerPath)
         dumpDebuggingTrace {
-            let! debugDumpScript = GenerateDebugScript configuration.TestBed
+            let debuggerScriptPath = Path.Combine(configuration.TestBed, "debug-script.txt")
+            let! debugDumpScript = Debugging.GenerateDebugScript BaseSOSCommandList debuggerScriptPath
 
             let dumpPath = 
                 Directory.GetFiles(configuration.TestBed, "webapp*.dmp")
                 |> Array.head
             yield! Debugging.DebugDumpWithSOS configuration.SystemInfo.CLIDebugger
                                               configuration.SystemInfo.EnvironmentVariables 
+                                              ""
                                               debugDumpScript
                                               dumpPath
         } |> ignore

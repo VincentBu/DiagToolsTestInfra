@@ -1,16 +1,21 @@
-﻿open Spectre.Console
+﻿namespace DiagToolsValidationToolSet
+
 open Spectre.Console.Cli
-open DiagToolsValidationToolSet.Command.DiagToolsTestRun
 
-[<EntryPoint>]
-let Main(args: string array) =
-    try    
-       let app = new CommandApp()
+open DiagToolsValidator.Command
 
-       app.Configure(fun configuration -> 
-           configuration.AddCommand<DiagToolsTestRunCommand>("diagtoolstest-run") |> ignore
-       )
+module Main =
 
-       app.Run(args)
-    with
-        | ex -> raise ex
+    [<EntryPoint>]
+    let Main(args: string array) =
+        try    
+           let app = new CommandApp()
+
+           app.Configure(fun configuration -> 
+               configuration.AddCommand<DiagToolsTestRun.DiagToolsTestRunCommand>("diagtoolstest-run") |> ignore
+               configuration.AddCommand<DebuggerExtensionTestRun.DebuggerExtensionTestRunCommand>("debuggerexttest-run") |> ignore
+           )
+
+           app.Run(args)
+        with
+            | ex -> raise ex

@@ -14,8 +14,8 @@ module TestInfrastructure =
             if DotNet.CurrentRID.Contains "win"
             then Path.Combine(configuration.TestBed, "env_activation.ps1"), [
                 $"$Env:DOTNET_ROOT=\"{configuration.DotNet.DotNetRoot}\"";
-                $"$Env:Path+=;\"{configuration.DotNet.DotNetRoot}\"";
-                $"$Env:Path+=;\"{configuration.DiagTool.ToolRoot}\""
+                $"$Env:Path+=\";{configuration.DotNet.DotNetRoot}\"";
+                $"$Env:Path+=\";{configuration.DiagTool.ToolRoot}\""
             ]
             else Path.Combine(configuration.TestBed, "env_activation.sh"),[
                 $"export DOTNET_ROOT={configuration.DotNet.DotNetRoot}";

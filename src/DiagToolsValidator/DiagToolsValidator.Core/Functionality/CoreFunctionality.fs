@@ -1,4 +1,4 @@
-﻿namespace DiagToolsValidator.Core.CoreFunctionality
+﻿namespace DiagToolsValidator.Core.Functionality
 
 open System
 open System.Text
@@ -128,6 +128,22 @@ module Core =
             Choice1Of2 (Directory.CreateDirectory path)
         with ex -> 
             ex.Data.Add("CreateDirectory", $"Fail to create directory {path}")
+            Choice2Of2 ex
+
+
+    let CopyFile (srcPath: string) (dstPath: string) =
+        let realDestPath =
+            if Directory.Exists(dstPath)
+            then // Copy file to a directory
+                Path.Combine(dstPath, Path.GetFileName(srcPath))
+            else
+                dstPath
+
+        try
+            File.Copy(srcPath, realDestPath)
+            Choice1Of2 (new FileInfo(realDestPath))
+        with ex ->
+            ex.Data.Add("CopyFile", $"Fail to copy {srcPath} to {dstPath}")
             Choice2Of2 ex
 
 

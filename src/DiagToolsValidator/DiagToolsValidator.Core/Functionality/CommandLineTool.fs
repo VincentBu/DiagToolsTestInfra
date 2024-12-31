@@ -1,4 +1,4 @@
-﻿namespace DiagToolsValidator.Core.CoreFunctionality
+﻿namespace DiagToolsValidator.Core.Functionality
 
 open System
 open System.Diagnostics
