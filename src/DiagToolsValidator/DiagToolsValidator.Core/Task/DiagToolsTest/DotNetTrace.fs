@@ -45,7 +45,7 @@ module DotNetTrace =
 
             // Test with console
             let! consoleAppExecutable = configuration.TargetApp.ConsoleApp.GetAppExecutable(configuration.TargetApp.BuildConfig)
-            let arguments = $"{toolILPath} collect -o consoleapp.nettrace --providers' Microsoft-Windows-DotNETRuntime -- {consoleAppExecutable}"
+            let arguments = $"{toolILPath} collect -o consoleapp.nettrace --providers Microsoft-Windows-DotNETRuntime -- {consoleAppExecutable}"
             yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                            arguments
                                            configuration.TestResultFolder
