@@ -113,7 +113,7 @@ module DiagToolsTestConfiguration =
                     configuration.SystemInfo.EnvironmentVariables["DOTNET_ROOT"] <- configuration.DotNet.DotNetRoot
                     for de: DictionaryEntry in Environment.GetEnvironmentVariables() |> Seq.cast<DictionaryEntry> do
                         configuration.SystemInfo.EnvironmentVariables[de.Key.ToString()] <- de.Value.ToString()
-                    if RuntimeInformation.RuntimeIdentifier.Contains("win")
+                    if DotNet.CurrentRID.Contains("win")
                     then 
                         configuration.SystemInfo.EnvironmentVariables["Path"] <- 
                             Environment.GetEnvironmentVariable("Path") + $";{configuration.DotNet.DotNetRoot}"

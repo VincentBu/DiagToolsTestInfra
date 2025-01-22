@@ -33,11 +33,11 @@ module DotNetApp =
                 ex.Data.Add("DotNetApp.GetTargetFramework", $"Fail to get target framework from {_appRoot}")
                 Choice2Of2 ex
 
-        member x.GetSymbolFolder (buildConfig: string) =
+        member x.GetSymbolFolder (buildConfig: string) (targetRID: string) =
             let trace = new Core.ProgressTraceBuilder(null)
             trace {
                 let! targetFramework = x.GetTargetFramework
-                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework, DotNet.CurrentRID)
+                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework, targetRID)
                 if Path.Exists(appSymbolFolder)
                 then 
                     return appSymbolFolder
@@ -47,11 +47,11 @@ module DotNetApp =
                     return! Choice2Of2 ex
             }
 
-        member x.GetNativeSymbolFolder (buildConfig: string) =
+        member x.GetNativeSymbolFolder (buildConfig: string) (targetRID: string) =
             let trace = new Core.ProgressTraceBuilder(null)
             trace {
                 let! targetFramework = x.GetTargetFramework
-                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework, DotNet.CurrentRID, "publish")
+                let appSymbolFolder = Path.Combine(_appRoot, "bin", buildConfig, targetFramework, targetRID, "publish")
                 if Path.Exists(appSymbolFolder)
                 then 
                     return appSymbolFolder
@@ -61,11 +61,11 @@ module DotNetApp =
                     return! Choice2Of2 ex
             }
 
-        member x.GetAppExecutable (buildConfig: string) =
+        member x.GetAppExecutable (buildConfig: string) (targetRID: string) =
             let trace = new Core.ProgressTraceBuilder(null)
-            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID DotNet.CurrentRID
+            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID targetRID
             trace {
-                let! symbolFolder = x.GetSymbolFolder(buildConfig)
+                let! symbolFolder = x.GetSymbolFolder buildConfig targetRID
                 let projectFile = x.GetProjectFile
                 let appName = Path.GetFileNameWithoutExtension(projectFile)
                 let excutable = Path.Combine(symbolFolder, $"{appName}{excutableFileExtension}")
@@ -78,11 +78,11 @@ module DotNetApp =
                     return! Choice2Of2 ex
             }
             
-        member x.GetAppNativeExecutable (buildConfig: string) =
+        member x.GetAppNativeExecutable (buildConfig: string) (targetRID: string) =
             let trace = new Core.ProgressTraceBuilder(null)
-            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID DotNet.CurrentRID
+            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID targetRID
             trace {
-                let! symbolFolder = x.GetNativeSymbolFolder(buildConfig)
+                let! symbolFolder = x.GetNativeSymbolFolder buildConfig targetRID
                 let projectFile = x.GetProjectFile
                 let appName = Path.GetFileNameWithoutExtension(projectFile)
                 let excutable = Path.Combine(symbolFolder, $"{appName}{excutableFileExtension}")
@@ -95,11 +95,11 @@ module DotNetApp =
                     return! Choice2Of2 ex
             }
 
-        member x.GetCreateDump (buildConfig: string) =
+        member x.GetCreateDump (buildConfig: string) (targetRID: string) =
             let trace = new Core.ProgressTraceBuilder(null)
-            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID DotNet.CurrentRID
+            let excutableFileExtension = DotNet.GetExcutableFileExtensionByRID targetRID
             trace {
-                let! symbolFolder = x.GetSymbolFolder(buildConfig)
+                let! symbolFolder = x.GetSymbolFolder buildConfig targetRID
                 let createDump = Path.Combine(symbolFolder, $"createdump{excutableFileExtension}")
                 if Path.Exists(createDump)
                 then 
@@ -119,18 +119,18 @@ module DotNetApp =
                                     CommandLineTool.PrintErrorData 
                                     true
 
-        member x.BuildApp (buildConfig: string) =
+        member x.BuildApp (buildConfig: string) (targetRID: string) =
             DotNet.RunDotNetCommand _dotNetEnv
-                                    $"build -r {DotNet.CurrentRID} -c {buildConfig}"
+                                    $"build -r {targetRID} -c {buildConfig}"
                                     appRoot 
                                     true 
                                     CommandLineTool.PrinteOutputData 
                                     CommandLineTool.PrintErrorData 
                                     true
                                     
-        member x.PublishApp (buildConfig: string) =
+        member x.PublishApp (buildConfig: string) (targetRID: string) =
             DotNet.RunDotNetCommand _dotNetEnv
-                                    $"publish -r {DotNet.CurrentRID} -c {buildConfig}"
+                                    $"publish -r {targetRID} -c {buildConfig}"
                                     appRoot 
                                     true 
                                     CommandLineTool.PrinteOutputData 

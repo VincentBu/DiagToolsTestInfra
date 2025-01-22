@@ -12,10 +12,13 @@
     <Compile Include="Functionality\DotNetFunctionality\DotNetApp.fs" />
     <Compile Include="Functionality\DotNetFunctionality\DotNetTool.fs" />
     <Compile Include="Functionality\Debugging.fs" />
+    <Compile Include="Configuration\CrossOSDACTest\CrossOSDACTestRunConfiguration.fs" />
     <Compile Include="Configuration\DebuggerExtensionTest\DebuggerExtensionTestRunConfiguration.fs" />
     <Compile Include="Configuration\DiagToolsTest\DiagToolsTestRunConfiguration.fs" />
     <Compile Include="Task\DebuggerExtension\Infrastructure.fs" />
     <Compile Include="Task\DebuggerExtension\DebuggerExtension.fs" />
+    <Compile Include="Task\CrossOSDAC\Infrastructure.fs" />
+    <Compile Include="Task\CrossOSDAC\CrossOSDAC.fs" />
     <Compile Include="Task\DiagToolsTest\Infrastructure.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetCounters.fs" />
     <Compile Include="Task\DiagToolsTest\DotNetDump.fs" />

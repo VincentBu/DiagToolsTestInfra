@@ -48,16 +48,16 @@ module DebuggerExtension =
             let debuggerScriptPath = Path.Combine(dumpDebugResultFolder, "debug-script.txt")
             let! debugDumpScript = Debugging.GenerateDebugScript SOSCommandList debuggerScriptPath
             // Initialize dump generating env
-            let! env = TestInfrastructure.ActiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables 
+            let! env = DotNet.ActiveNativeDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables 
                                                                           configuration.TestResultFolder
-            let env = TestInfrastructure.ActiveStressLogEnvironment env
+            let env = DotNet.ActiveStressLogEnvironment env
 
-            let! srcCreateDumpPath = configuration.TargetApp.NativeAOTApp.GetCreateDump configuration.TargetApp.BuildConfig
-            let! nativeSymbolFolder = configuration.TargetApp.NativeAOTApp.GetNativeSymbolFolder configuration.TargetApp.BuildConfig
+            let! srcCreateDumpPath = configuration.TargetApp.NativeAOTApp.GetCreateDump configuration.TargetApp.BuildConfig DotNet.CurrentRID
+            let! nativeSymbolFolder = configuration.TargetApp.NativeAOTApp.GetNativeSymbolFolder configuration.TargetApp.BuildConfig DotNet.CurrentRID
             Core.CopyFile srcCreateDumpPath nativeSymbolFolder |> ignore
 
             // Run nativeaot app
-            let! executablePath = configuration.TargetApp.NativeAOTApp.GetAppNativeExecutable configuration.TargetApp.BuildConfig
+            let! executablePath = configuration.TargetApp.NativeAOTApp.GetAppNativeExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
             CommandLineTool.RunCommand executablePath
                                        ""
                                        ""
@@ -85,8 +85,8 @@ module DebuggerExtension =
             let! resultFolderInfo = Core.CreateDirectory resultFolder
             let debuggerScriptPath = Path.Combine(resultFolderInfo.FullName, "debug-script.txt")
             let! debugLaunchableScript = Debugging.GenerateDebugScript SOSCommandList debuggerScriptPath
-            let! executablePath = configuration.TargetApp.NativeAOTApp.GetAppNativeExecutable configuration.TargetApp.BuildConfig
-            let env = TestInfrastructure.ActiveStressLogEnvironment configuration.SystemInfo.EnvironmentVariables
+            let! executablePath = configuration.TargetApp.NativeAOTApp.GetAppNativeExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
+            let env = DotNet.ActiveStressLogEnvironment configuration.SystemInfo.EnvironmentVariables
             yield! Debugging.DebugLaunchableWithSOS configuration.SystemInfo.CLIDebugger
                                                     env
                                                     resultFolderInfo.FullName
@@ -94,6 +94,6 @@ module DebuggerExtension =
                                                     executablePath
         } |> ignore
 
-        TestInfrastructure.DeactiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables |> ignore
+        DotNet.DeactiveNativeDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables |> ignore
 
         result

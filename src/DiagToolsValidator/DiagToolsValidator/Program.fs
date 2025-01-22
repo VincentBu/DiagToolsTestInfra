@@ -14,6 +14,7 @@ module Main =
            app.Configure(fun configuration -> 
                configuration.AddCommand<DiagToolsTestRun.DiagToolsTestRunCommand>("diagtoolstest-run") |> ignore
                configuration.AddCommand<DebuggerExtensionTestRun.DebuggerExtensionTestRunCommand>("debuggerexttest-run") |> ignore
+               configuration.AddCommand<CrossOSDACTestRun.CrossOSDACTestRunCommand>("crossosdac-run") |> ignore
            )
 
            app.Run(args)

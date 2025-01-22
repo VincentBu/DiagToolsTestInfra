@@ -44,7 +44,7 @@ module DotNetTrace =
             CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
 
             // Test with console
-            let! consoleAppExecutable = configuration.TargetApp.ConsoleApp.GetAppExecutable(configuration.TargetApp.BuildConfig)
+            let! consoleAppExecutable = configuration.TargetApp.ConsoleApp.GetAppExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
             let arguments = $"{toolILPath} collect -o consoleapp.nettrace --providers Microsoft-Windows-DotNETRuntime -- {consoleAppExecutable}"
             yield! DotNet.RunDotNetCommand configuration.SystemInfo.EnvironmentVariables
                                            arguments

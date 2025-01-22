@@ -74,7 +74,7 @@ module DebuggerExtensionTestRun =
                         File.WriteAllText(targetNativeAOTAppSrcPath, consoleSrcContent)
 
                         trace.AppendLineToLogger $"Publish nativeaot app"
-                        yield! configuration.TargetApp.NativeAOTApp.PublishApp(configuration.TargetApp.BuildConfig)
+                        yield! configuration.TargetApp.NativeAOTApp.PublishApp configuration.TargetApp.BuildConfig DotNet.CurrentRID
                         
                         // Install dotnet-debugger-extensions
                         AnsiConsole.Write(new Rule($"Install dotnet-debugger-extensions({configuration.DotNet.SDKVersion})"))
@@ -93,7 +93,7 @@ module DebuggerExtensionTestRun =
                     // Test dotnet-debugger-extensions
                     AnsiConsole.Write(new Rule($"Test dotnet-debugger-extensions"))
                     AnsiConsole.WriteLine()
-                    DebuggerExtension.TestDebuggerExtension(configuration)
+                    DebuggerExtension.TestDebuggerExtension configuration
                 )
             |> ignore
             0

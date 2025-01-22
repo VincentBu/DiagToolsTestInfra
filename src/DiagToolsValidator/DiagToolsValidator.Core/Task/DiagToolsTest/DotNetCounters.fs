@@ -58,7 +58,7 @@ module DotNetCounters =
             CommandLineTool.TerminateCommandInvoker(webappInvoker) |> ignore
 
             // Test with console
-            let! consoleAppExecutable = configuration.TargetApp.ConsoleApp.GetAppExecutable(configuration.TargetApp.BuildConfig)
+            let! consoleAppExecutable = configuration.TargetApp.ConsoleApp.GetAppExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
             for arguments in [
                 $"{toolILPath} collect -o console_counter.csv -- {consoleAppExecutable}";
                 $"{toolILPath} monitor -- {consoleAppExecutable}";

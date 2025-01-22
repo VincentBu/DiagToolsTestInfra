@@ -35,7 +35,7 @@ module TestInfrastructure =
         let trace = new Core.ProgressTraceBuilder(null)
         let invokeResult = 
             trace {
-                let! executablePath = configuration.TargetApp.WebApp.GetAppExecutable(configuration.TargetApp.BuildConfig)
+                let! executablePath = configuration.TargetApp.WebApp.GetAppExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
                 let! commandInvoker = CommandLineTool.RunCommand executablePath
                                                                  ""
                                                                  ""
@@ -62,7 +62,7 @@ module TestInfrastructure =
         let trace = new Core.ProgressTraceBuilder(null)
         let invokeResult = 
             trace {
-                let! executablePath = configuration.TargetApp.GCDumpPlayground.GetAppExecutable(configuration.TargetApp.BuildConfig)
+                let! executablePath = configuration.TargetApp.GCDumpPlayground.GetAppExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
                 let! commandInvoker = CommandLineTool.RunCommand executablePath
                                                                  "0.05"
                                                                  ""

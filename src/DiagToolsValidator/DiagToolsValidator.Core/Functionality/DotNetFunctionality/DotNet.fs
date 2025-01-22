@@ -8,6 +8,7 @@ open System.Collections.Generic
 
 open Core
 open CommandLineTool
+open Microsoft.Win32
 
 module DotNet =
     let CurrentRID = RuntimeInformation.RuntimeIdentifier
@@ -133,3 +134,70 @@ module DotNet =
                    outputDataReceivedHandler 
                    errorDataReceivedHandler 
                    waitForExit
+
+
+    let ActiveDumpGeneratingEnvironment (env: Dictionary<string, string>) (dumpPath: string) =
+        let _env = new Dictionary<string, string>(env)
+
+        _env["DOTNET_DbgEnableMiniDump"] <- "1"
+        _env["DOTNET_DbgMiniDumpType"] <- "4"
+        _env["DOTNET_DbgMiniDumpName"] <- dumpPath
+
+        _env
+
+
+    let DeactiveDumpGeneratingEnvironment (env: Dictionary<string, string>) =
+        let _env = new Dictionary<string, string>(env)
+        _env["DOTNET_DbgEnableMiniDump"] <- "0"
+        _env
+
+
+    let ActiveNativeDumpGeneratingEnvironment (env: Dictionary<string, string>) (dumpFolder: string) =
+        let _env = new Dictionary<string, string>(env)
+        
+        if CurrentRID.Contains("win")
+        then 
+            try
+                // windows case: set reg keys
+                let registrykeyHKLM = Registry.LocalMachine
+                let LocalDumpsKeyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+                let LocalDumpsKey = registrykeyHKLM.OpenSubKey(LocalDumpsKeyPath, true)
+                LocalDumpsKey.SetValue("DumpFolder", dumpFolder, RegistryValueKind.ExpandString)
+                LocalDumpsKey.SetValue("DumpType", 2, RegistryValueKind.DWord)
+                LocalDumpsKey.Close()
+                Choice1Of2 _env
+            with ex ->
+                ex.Data.Add("", $"Fail to set registry key.")
+                Choice2Of2 ex
+        else
+            _env["DOTNET_DbgEnableMiniDump"] <- "1"
+            _env["DOTNET_DbgMiniDumpType"] <- "4"
+            _env["DOTNET_DbgMiniDumpName"] <- 
+                Path.Combine(dumpFolder, $"nativedump.dmp")
+            Choice1Of2 _env
+
+
+    let DeactiveNativeDumpGeneratingEnvironment (env: Dictionary<string, string>) =
+        let _env = new Dictionary<string, string>(env)
+        if CurrentRID.Contains("win")
+        then // windows case: delete reg keys
+            try
+                let registrykeyHKLM = Registry.CurrentUser
+                let keyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+
+                registrykeyHKLM.DeleteSubKey($@"{keyPath}\DumpFolder", false)
+                registrykeyHKLM.DeleteSubKey($@"{keyPath}\DumpType", false)
+                Choice1Of2 _env
+            with ex ->
+                ex.Data.Add("", $"Fail to delete registry key.")
+                Choice2Of2 ex
+        else
+            _env["DOTNET_DbgEnableMiniDump"] <- "0"
+            Choice1Of2 _env
+
+
+    let ActiveStressLogEnvironment (env: Dictionary<string, string>) =
+        let _env = new Dictionary<string, string>(env)
+        _env["DOTNET_StressLogLevel"] <- "10"
+        _env["DOTNET_TotalStressLogSize"] <- "8196"
+        _env

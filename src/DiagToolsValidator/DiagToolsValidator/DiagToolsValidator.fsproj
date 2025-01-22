@@ -15,17 +15,24 @@
 	<None Include="Commands\DebuggerExtensionTest\TargetApps\nativeaot\Program.cs.txt">
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</None>
+	<None Include="Commands\CrossOSDACTest\TargetApps\oom\Program.cs.txt">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
+	<None Include="Commands\CrossOSDACTest\TargetApps\uhe\Program.cs.txt">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
     <Compile Include="Commands\DiagToolsTest\DiagToolsTestRunCommand.fs" />
 	<Compile Include="Commands\DebuggerExtensionTest\DebuggerExtensionTestRunCommand.fs" />
-    <Compile Include="Program.fs" />
+	  <Compile Include="Commands\CrossOSDACTest\CrossOSDACTestRunCommand.fs" />
+	  <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
+	  <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DiagToolsValidator.Core\DiagToolsValidator.Core.fsproj" />
+	  <ProjectReference Include="..\DiagToolsValidator.Core\DiagToolsValidator.Core.fsproj" />
   </ItemGroup>
 
 </Project>

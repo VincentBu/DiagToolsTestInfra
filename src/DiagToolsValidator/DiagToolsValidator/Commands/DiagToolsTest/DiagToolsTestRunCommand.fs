@@ -83,7 +83,7 @@ module DiagToolsTestRun =
                 
                 // Build console app
                 trace.AppendLineToLogger "Build Console App"
-                yield! configuration.TargetApp.ConsoleApp.BuildApp(buildConfig)
+                yield! configuration.TargetApp.ConsoleApp.BuildApp buildConfig DotNet.CurrentRID
 
                 // Create GCDumpPlayground
                 trace.AppendLineToLogger "Create GCDumpPlayground"
@@ -96,7 +96,7 @@ module DiagToolsTestRun =
                 
                 // Build GCDumpPlayground
                 trace.AppendLineToLogger  "Build GCDumpPlayground App"
-                yield! configuration.TargetApp.GCDumpPlayground.BuildApp(buildConfig)
+                yield! configuration.TargetApp.GCDumpPlayground.BuildApp buildConfig DotNet.CurrentRID
             
                 // Create webapp
                 trace.AppendLineToLogger  "Create Webapp"
@@ -104,7 +104,7 @@ module DiagToolsTestRun =
             
                 // Build webapp
                 trace.AppendLineToLogger "Build Webapp"
-                yield! configuration.TargetApp.WebApp.BuildApp(buildConfig)
+                yield! configuration.TargetApp.WebApp.BuildApp buildConfig DotNet.CurrentRID
             } |> ignore
             
             // Start test

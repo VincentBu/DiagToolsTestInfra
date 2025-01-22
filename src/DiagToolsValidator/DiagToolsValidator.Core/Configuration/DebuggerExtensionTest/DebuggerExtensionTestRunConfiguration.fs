@@ -109,7 +109,7 @@ module DebuggerExtensionTestConfiguration =
                         if String.IsNullOrEmpty(configuration.TestName)
                         then 
                             let testName = new StringBuilder("DiagTools")
-                            testName.Append($"-{RuntimeInformation.RuntimeIdentifier}") |> ignore
+                            testName.Append($"-{DotNet.CurrentRID}") |> ignore
                             testName.Append($"-SDK{sdkVersion}") |> ignore
                             testName.Append($"-Tool{configuration.DebuggerExtension.ToolVersion}") |> ignore
                             configuration.TestName <- testName.ToString()
@@ -129,7 +129,7 @@ module DebuggerExtensionTestConfiguration =
                         configuration.SystemInfo.EnvironmentVariables["DOTNET_ROOT"] <- configuration.DotNet.DotNetRoot
                         for de: DictionaryEntry in Environment.GetEnvironmentVariables() |> Seq.cast<DictionaryEntry> do
                             configuration.SystemInfo.EnvironmentVariables[de.Key.ToString()] <- de.Value.ToString()
-                        if RuntimeInformation.RuntimeIdentifier.Contains("win")
+                        if DotNet.CurrentRID.Contains("win")
                         then 
                             configuration.SystemInfo.EnvironmentVariables["Path"] <- 
                                 Environment.GetEnvironmentVariable("Path") + $";{configuration.DotNet.DotNetRoot}"
