@@ -35,7 +35,8 @@ module TestInfrastructure =
         let trace = new Core.ProgressTraceBuilder(null)
         let invokeResult = 
             trace {
-                let dumpPath = Path.Combine(configuration.DumpFolder, $"dump-oom-{configuration.DotNet.SDKVersion}-{DotNet.CurrentRID}.dmp")
+                let dumpName = Path.GetFileName(configuration.TargetApp.OOMApp.AppRoot)
+                let dumpPath = Path.Combine(configuration.DumpFolder, $"{dumpName}.dmp")
                 let dumpGenerateEnv = DotNet.ActiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables dumpPath
                 let! executablePath = configuration.TargetApp.OOMApp.GetAppExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
                 let! commandInvoker = CommandLineTool.RunCommand executablePath
@@ -56,7 +57,8 @@ module TestInfrastructure =
         let trace = new Core.ProgressTraceBuilder(null)
         let invokeResult = 
             trace {
-                let dumpPath = Path.Combine(configuration.DumpFolder, $"dump-uhe-{configuration.DotNet.SDKVersion}-{DotNet.CurrentRID}.dmp")
+                let dumpName = Path.GetFileName(configuration.TargetApp.UHEApp.AppRoot)
+                let dumpPath = Path.Combine(configuration.DumpFolder, $"{dumpName}.dmp")
                 let dumpGenerateEnv = DotNet.ActiveDumpGeneratingEnvironment configuration.SystemInfo.EnvironmentVariables dumpPath
                 let! executablePath = configuration.TargetApp.UHEApp.GetAppExecutable configuration.TargetApp.BuildConfig DotNet.CurrentRID
                 let! commandInvoker = CommandLineTool.RunCommand executablePath

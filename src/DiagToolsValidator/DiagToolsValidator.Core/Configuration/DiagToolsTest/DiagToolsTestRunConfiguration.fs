@@ -54,7 +54,7 @@ module DiagToolsTestConfiguration =
 
             try
                 let configuration = _deserializer.Deserialize<DiagToolsTestConfiguration>(serializedConfiguration);
-                let parseExn = new exn()
+                let parseExn = new exn("Fail to parse config file")
                 if String.IsNullOrEmpty configuration.DotNet.SDKVersion
                 then
                     parseExn.Data.Add(nameof(DiagToolsTestConfigurationGenerator), "Please specify .NET SDK version")

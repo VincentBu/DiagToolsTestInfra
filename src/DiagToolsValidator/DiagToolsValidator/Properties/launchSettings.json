@@ -2,7 +2,7 @@
   "profiles": {
     "DiagToolsValidator": {
       "commandName": "Project",
-      "commandLineArgs": "debuggerexttest-run -c \"C:\\Workspace\\DiagTool\\DebuggerExt\\DebuggerExtensionTest.yaml\"",
+      "commandLineArgs": "crossosdactest-run -c C:\\Workspace\\DiagTool\\TestOutput\\CrossOSDACTest.yaml",
       "remoteDebugEnabled": false
     },
     "WSL": {

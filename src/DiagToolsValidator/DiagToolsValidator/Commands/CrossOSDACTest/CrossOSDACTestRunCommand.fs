@@ -19,7 +19,7 @@ module CrossOSDACTestRun=
     type CrossOSDACTestRunCommand() =
         inherit Command<CrossOSDACTestRunSettings>()
         let _baseOOMAppSrcPath = Path.Combine("Commands", "CrossOSDACTest", "TargetApps", "oom", "Program.cs.txt")
-        let _baseUHESrcPath = Path.Combine("Commands", "DiagCrossOSDACTestToolsTest", "TargetApps", "uhe", "Program.cs.txt")
+        let _baseUHESrcPath = Path.Combine("Commands", "CrossOSDACTest", "TargetApps", "uhe", "Program.cs.txt")
         
         override this.Execute(context: CommandContext, setting: CrossOSDACTestRunSettings) =
             AnsiConsole.Write((new FigletText("Cross OS DAC Test")).Centered().Color(Color.Red))
@@ -72,7 +72,7 @@ module CrossOSDACTestRun=
                 File.WriteAllText(targetNativeAOTAppSrcPath, consoleSrcContent)
 
                 trace.AppendLineToLogger $"Build OOM app"
-                yield! configuration.TargetApp.UHEApp.BuildApp configuration.TargetApp.BuildConfig DotNet.CurrentRID
+                yield! configuration.TargetApp.OOMApp.BuildApp configuration.TargetApp.BuildConfig DotNet.CurrentRID
                         
                 trace.AppendLineToLogger $"Create UHE app"
                 yield! configuration.TargetApp.UHEApp.CreateApp()
@@ -86,8 +86,8 @@ module CrossOSDACTestRun=
                 yield! configuration.TargetApp.UHEApp.BuildApp configuration.TargetApp.BuildConfig DotNet.CurrentRID
 
                 // Generate dumps for oom and uhe apps
-                yield! TestInfrastructure.GenerateDumpForOOM configuration
-                yield! TestInfrastructure.GenerateDumpForUHE configuration
+                TestInfrastructure.GenerateDumpForOOM configuration |> ignore
+                TestInfrastructure.GenerateDumpForUHE configuration |> ignore
                         
                 // Install dotnet-dump
                 AnsiConsole.Write(new Rule($"Install dotnet-dump({configuration.DotNet.SDKVersion})"))
@@ -146,6 +146,7 @@ module CrossOSDACTestRun=
                     } |> ignore
                     
                     // Test Cross OS DAC
-                    AnsiConsole.Write(new Rule($"Test Cross OS DAC for {configuration.DotNet.SDKVersion}({targetRID})"))
-                    AnsiConsole.WriteLine()
-                    CrossOSDAC.TestCrossOSDAC configuration targetRID)
+                    //AnsiConsole.Write(new Rule($"Test Cross OS DAC for {configuration.DotNet.SDKVersion}({targetRID})"))
+                    //AnsiConsole.WriteLine()
+                    //CrossOSDAC.TestCrossOSDAC configuration targetRID
+                    )

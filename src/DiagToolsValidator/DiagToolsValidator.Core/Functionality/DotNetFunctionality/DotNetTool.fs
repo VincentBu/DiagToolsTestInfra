@@ -25,7 +25,7 @@ module DotNetTool =
                           (toolVersion: string) 
                           (toolName: string) =
         let argument = 
-            if Path.Exists(configFilePath)
+            if File.Exists(configFilePath)
             then $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed} --configfile {configFilePath}"
             else $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed}"
         DotNet.RunDotNetCommand dotNetEnv 

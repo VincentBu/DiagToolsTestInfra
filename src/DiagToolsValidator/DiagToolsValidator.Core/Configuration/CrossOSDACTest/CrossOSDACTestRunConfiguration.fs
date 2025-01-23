@@ -2,10 +2,8 @@
 
 open System
 open System.IO
-open System.Text
 open System.Collections.Generic
 open System.Collections
-open System.Runtime.InteropServices
 
 open YamlDotNet.Serialization
 
@@ -59,7 +57,7 @@ module CrossOSDACTestRunConfiguration =
 
             try
                 let configuration = _deserializer.Deserialize<CrossOSDACTestBaseConfiguration>(serializedConfiguration);
-                let parseExn = new exn()
+                let parseExn = new exn("Fail to parse config file")
                 if List.isEmpty configuration.SDKVersionList
                 then
                     parseExn.Data.Add(nameof(CrossOSDACTestConfigurationGenerator), "Please specify .NET SDK version")
@@ -97,17 +95,17 @@ module CrossOSDACTestRunConfiguration =
 
                         configuration.TestBed <- baseConfig.TestBed
                         configuration.TestAssets <- Path.Combine(configuration.TestBed, "TestAssets")
-                        configuration.DumpFolder <- Path.Combine(configuration.TestAssets, "dump")
-                        configuration.AnalysisOutputFolder <- Path.Combine(configuration.TestAssets, "analysisoutput")
 
                         configuration.DotNet.SDKVersion <- sdkVersion
                         configuration.DotNet.DotNetRoot <- Path.Combine(configuration.TestBed, $"dotnet-sdk-{sdkVersion}")
+
+                        configuration.DumpFolder <- Path.Combine(configuration.TestAssets, "dump", configuration.DotNet.SDKVersion)
+                        configuration.AnalysisOutputFolder <- Path.Combine(configuration.TestAssets, "analysisoutput", configuration.DotNet.SDKVersion)
                         
                         configuration.DotNetDump.ToolVersion <- baseConfig.DotNetDump.ToolVersion
                         configuration.DotNetDump.Feed <- baseConfig.DotNetDump.Feed
                         configuration.DotNetDump.ToolRoot <- Path.Combine(configuration.TestBed, $"dotnet-dump-sdk{sdkVersion}")
                     
-                        configuration.SystemInfo.EnvironmentVariables["DOTNET_ROOT"] <- configuration.DotNet.DotNetRoot
                         for de: DictionaryEntry in Environment.GetEnvironmentVariables() |> Seq.cast<DictionaryEntry> do
                             configuration.SystemInfo.EnvironmentVariables[de.Key.ToString()] <- de.Value.ToString()
                         if DotNet.CurrentRID.Contains("win")
@@ -117,8 +115,9 @@ module CrossOSDACTestRunConfiguration =
                         else
                             configuration.SystemInfo.EnvironmentVariables["Path"] <- 
                                 Environment.GetEnvironmentVariable("Path") + $":{configuration.DotNet.DotNetRoot}"
+                        configuration.SystemInfo.EnvironmentVariables["DOTNET_ROOT"] <- configuration.DotNet.DotNetRoot
 
-                        let targetAppsRoot = Path.Combine(configuration.TestAssets, "TargetApps")
+                        let targetAppsRoot = Path.Combine(configuration.TestAssets, "TargetApps", configuration.DotNet.SDKVersion)
                         configuration.TargetApp.BuildConfig <- baseConfig.TargetApp.BuildConfig
                         configuration.TargetApp.OOMApp <- new DotNetApp.DotNetApp(configuration.SystemInfo.EnvironmentVariables,
                                                                                   "console",

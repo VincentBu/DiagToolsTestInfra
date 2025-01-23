@@ -6,7 +6,7 @@ open DiagToolsValidator.Core.Functionality
 open DiagToolsValidator.Core.Configuration
 
 module CrossOSDAC =
-    let SOSCommandList = 
+    let BaseSOSCommandList = 
         [
             "clrstack";
             "clrstack -i";
@@ -23,7 +23,7 @@ module CrossOSDAC =
 
     let AnalyzeDumpOnLinux (configuration: CrossOSDACTestRunConfiguration.CrossOSDACTestRunConfiguration) =
         let toolName = "dotnet-dump"
-        Directory.GetFiles(configuration.DumpFolder, $"dump-*.dmp")
+        Directory.GetFiles(configuration.DumpFolder, $"*.dmp")
         |> Array.map(
             fun dumpPath ->
                 let dumpName = Path.GetFileNameWithoutExtension(dumpPath)
@@ -39,7 +39,7 @@ module CrossOSDAC =
                                                                       CommandLineTool.IgnoreErrorData
                                                                       false
                     let! analyzeInvoke = analyzeInvokeResult
-                    SOSCommandList
+                    BaseSOSCommandList
                     |> List.map (fun sosCommand -> analyzeInvoke.Proc.StandardInput.WriteLine(sosCommand))
                     |> ignore
 
@@ -50,7 +50,7 @@ module CrossOSDAC =
 
     let AnalyzeDumpOnWindows (configuration: CrossOSDACTestRunConfiguration.CrossOSDACTestRunConfiguration) (targetRID: string) =
         let toolName = "dotnet-dump"
-        Directory.GetFiles(configuration.DumpFolder, $"dump-*.dmp")
+        Directory.GetFiles(configuration.DumpFolder, $"*.dmp")
         |> Array.filter(
             fun dumpPath -> TestInfrastructure.FilterDumpByTargetRID targetRID dumpPath)
         |> Array.map(
@@ -68,7 +68,7 @@ module CrossOSDAC =
                                                                       CommandLineTool.IgnoreErrorData
                                                                       false
                     let! analyzeInvoke = analyzeInvokeResult
-                    SOSCommandList
+                    BaseSOSCommandList
                     |> List.map (fun sosCommand -> analyzeInvoke.Proc.StandardInput.WriteLine(sosCommand))
                     |> ignore
 

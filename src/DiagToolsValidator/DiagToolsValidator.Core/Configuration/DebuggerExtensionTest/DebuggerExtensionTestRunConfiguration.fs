@@ -60,7 +60,7 @@ module DebuggerExtensionTestConfiguration =
 
             try
                 let configuration = _deserializer.Deserialize<DebuggerExtensionTestBaseConfiguration>(serializedConfiguration);
-                let parseExn = new exn()
+                let parseExn = new exn("Fail to parse config file")
                 if List.isEmpty configuration.SDKVersionList
                 then
                     parseExn.Data.Add(nameof(DebuggerExtensionTestConfigurationGenerator), "Please specify .NET SDK version")

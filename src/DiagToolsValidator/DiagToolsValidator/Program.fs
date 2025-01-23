@@ -12,9 +12,9 @@ module Main =
            let app = new CommandApp()
 
            app.Configure(fun configuration -> 
+               configuration.AddCommand<CrossOSDACTestRun.CrossOSDACTestRunCommand>("crossosdactest-run") |> ignore
                configuration.AddCommand<DiagToolsTestRun.DiagToolsTestRunCommand>("diagtoolstest-run") |> ignore
                configuration.AddCommand<DebuggerExtensionTestRun.DebuggerExtensionTestRunCommand>("debuggerexttest-run") |> ignore
-               configuration.AddCommand<CrossOSDACTestRun.CrossOSDACTestRunCommand>("crossosdac-run") |> ignore
            )
 
            app.Run(args)
