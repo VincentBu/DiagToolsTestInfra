@@ -61,12 +61,13 @@ module DebuggerExtensionTestRun =
                         trace.AppendLineToLogger $"Generate nuget config to {nugetConfig}"
 
                         // Modify project file
-                        let xmlData = File.ReadAllText(configuration.TargetApp.NativeAOTApp.GetProjectFile)
+                        let! projectFile = configuration.TargetApp.NativeAOTApp.GetProjectFile
+                        let xmlData = File.ReadAllText(projectFile)
                         let doc = XDocument.Parse(xmlData)
                         let propertyGroup = doc.Root.Element("PropertyGroup")
                         propertyGroup.Add(new XElement("AllowUnsafeBlocks", "true"))
                         propertyGroup.Add(new XElement("PublishAot", "true"))
-                        doc.Save(configuration.TargetApp.NativeAOTApp.GetProjectFile)
+                        doc.Save(projectFile)
 
                         // Replace source file
                         let targetNativeAOTAppSrcPath = Path.Combine(configuration.TargetApp.NativeAOTApp.AppRoot, "Program.cs")

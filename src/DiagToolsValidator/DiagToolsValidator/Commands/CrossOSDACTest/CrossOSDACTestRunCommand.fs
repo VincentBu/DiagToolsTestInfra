@@ -146,7 +146,6 @@ module CrossOSDACTestRun=
                     } |> ignore
                     
                     // Test Cross OS DAC
-                    //AnsiConsole.Write(new Rule($"Test Cross OS DAC for {configuration.DotNet.SDKVersion}({targetRID})"))
-                    //AnsiConsole.WriteLine()
-                    //CrossOSDAC.TestCrossOSDAC configuration targetRID
-                    )
+                    AnsiConsole.Write(new Rule($"Test Cross OS DAC for {configuration.DotNet.SDKVersion}({targetRID})"))
+                    AnsiConsole.WriteLine()
+                    CrossOSDAC.TestCrossOSDAC configuration targetRID)

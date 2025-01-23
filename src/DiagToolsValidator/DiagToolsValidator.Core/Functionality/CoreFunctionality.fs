@@ -122,6 +122,12 @@ module Core =
             then List.last resultList
             else List.last failedList
 
+        member this.TryWith(body, handler) =
+            try
+                this.ReturnFrom(body())
+            with
+                e -> handler e
+
 
     let CreateDirectory (path: string) =
         try
@@ -178,8 +184,3 @@ module Core =
         with ex -> 
             ex.Data.Add("DecompressZip", $"Fail to decompress gzip file {zipPath} to {destinationFolder}")
             Choice2Of2 ex
-
-
-    let WaitUntil (p: unit -> bool) =
-        while not (p()) do
-            Thread.Sleep(1000)
