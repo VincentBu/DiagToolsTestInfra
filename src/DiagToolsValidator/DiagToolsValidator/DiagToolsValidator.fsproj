@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<None Include="Commands\LTTngTest\TargetApps\gcperfsim\Program.cs.txt">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
     <None Include="Commands\DiagToolsTest\TargetApps\consoleapp\Program.cs.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -21,10 +24,11 @@
 	<None Include="Commands\CrossOSDACTest\TargetApps\uhe\Program.cs.txt">
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</None>
+	<Compile Include="Commands\LTTngTest\LTTngTestRunCommand.fs" />
     <Compile Include="Commands\DiagToolsTest\DiagToolsTestRunCommand.fs" />
 	<Compile Include="Commands\DebuggerExtensionTest\DebuggerExtensionTestRunCommand.fs" />
-	  <Compile Include="Commands\CrossOSDACTest\CrossOSDACTestRunCommand.fs" />
-	  <Compile Include="Program.fs" />
+	<Compile Include="Commands\CrossOSDACTest\CrossOSDACTestRunCommand.fs" />
+	<Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

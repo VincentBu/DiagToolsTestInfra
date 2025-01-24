@@ -4,8 +4,6 @@ open System.IO
 
 open DiagToolsValidator.Core.Functionality
 open DiagToolsValidator.Core.Configuration
-open System
-open System.Threading
 
 
 module TestInfrastructure =
