@@ -89,7 +89,7 @@ module Debugging =
         let arguments = 
             if DotNet.CurrentRID.Contains("win")
             then $"-g -cf {debuggerScriptPath} {launchable}"
-            else $"lldb -s {debuggerScriptPath} -o \"run\" {launchable}"
+            else $"-s {debuggerScriptPath} -o \"run\" {launchable}"
 
         let _env = new Dictionary<string, string>(env)
         _env["DOTNET_StressLogLevel"] <- "10"

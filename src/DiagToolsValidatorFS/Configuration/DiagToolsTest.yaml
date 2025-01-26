@@ -1,0 +1,30 @@
+# TestBedRoot is the directory where the testbed is stored.
+TestBed:
+OptionalFeatureContainer: y
+
+DotNet:
+  # Full version of .net(core) sdk.
+  SDKVersion:
+
+DiagTool:
+  # Full version of diagnostics tools.
+  DiagToolVersion: 
+    
+  # diag tools to test, comment out the tools that don't need to be validated
+  ToolsToTest: 
+    - dotnet-counters
+    - dotnet-dump
+    - dotnet-gcdump
+    - dotnet-sos
+    - dotnet-stack
+    - dotnet-trace
+  # DO NOT CHANGE FEED BEFORE CONFIRMING WITH CLIENT
+  Feed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+
+TargetApp:
+  BuildConfig: Debug
+
+SystemInfo:
+  OSName: 
+  CPUArchitecture: 
+  CLIDebugger: 

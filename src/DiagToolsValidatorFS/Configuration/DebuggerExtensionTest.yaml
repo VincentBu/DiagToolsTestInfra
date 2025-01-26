@@ -1,0 +1,18 @@
+# TestBedRoot is the directory where the testbed is stored.
+TestBed:
+
+SDKVersionList:
+
+DebuggerExtension:
+  # Full version of diagnostics tools.
+  ToolVersion: 
+  # DO NOT CHANGE FEED BEFORE CONFIRMING WITH CLIENT
+  Feed: https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json
+  UserName:
+  Token:
+
+TargetApp:
+  BuildConfig: Debug
+
+SystemInfo:
+  CLIDebugger: 
