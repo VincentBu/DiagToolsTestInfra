@@ -75,7 +75,8 @@ namespace DiagToolsValidationRunner.Core.Functionality
             this.appTemplate = appTemplate;
             this.appRoot = appRoot;
             this.dotNetEnv = dotNetEnv;
-            this.dotNetExecutable = dotNetEnv.GetValueOrDefault("DOTNET_ROOT", "dotnet");
+            string dotNetRoot = dotNetEnv.GetValueOrDefault("DOTNET_ROOT", "");
+            this.dotNetExecutable = Path.Combine(dotNetRoot, "dotnet");
             if (String.IsNullOrEmpty(appName))
             {
                 this.appName = Path.GetFileName(appRoot);

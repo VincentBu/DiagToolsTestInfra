@@ -1,7 +1,7 @@
-# TestBedRoot is the directory where the testbed is stored.
-TestBed:
+Test:
+  TestBed:
 
 SDKVersionList:
 
-TargetApp:
+AppSetting:
   BuildConfig: Debug
