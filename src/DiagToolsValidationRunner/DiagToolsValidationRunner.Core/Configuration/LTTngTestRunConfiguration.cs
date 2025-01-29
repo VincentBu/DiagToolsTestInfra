@@ -1,22 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 
 using DiagToolsValidationRunner.Core.Functionality;
 using System.Collections;
 
-namespace DiagToolsValidationRunner.Core.Configuration.LTTng
+namespace DiagToolsValidationRunner.Core.Configuration.LTTngTest
 {
-
     public class TargetAppSetting : BaseTargetAppSetting
     {
         public DotNetApp? GCPerfsim;
     }
 
-    public class LTTngRunConfiguration
+    public class LTTngTestRunConfiguration
     {
         public required BaseTestSetting Test;
         public required DotNetSDKSetting SDKSetting;
@@ -24,25 +18,25 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTng
         public required BaseSystemInformation SysInfo;
     }
 
-    public class LTTngConfiguration
+    public class LTTngTestConfiguration
     {
         public required BaseTestSetting Test;
         public required List<string> SDKVersionList;
         public required TargetAppSetting AppSetting;
-        public List<LTTngRunConfiguration>? LTTngRunConfigurationList;
+        public List<LTTngTestRunConfiguration>? LTTngRunConfigurationList;
     }
 
     public static class LTTngTestConfigurationGenerator
     {
         private static IDeserializer _deserializer = (new DeserializerBuilder()).IgnoreUnmatchedProperties().Build();
         
-        private static LTTngConfiguration ParseConfigFile(string configFile)
+        private static LTTngTestConfiguration ParseConfigFile(string configFile)
         {
             try
             {
                 string serializedConfiguration = File.ReadAllText(configFile);
-                LTTngConfiguration baseConfiguration =
-                    _deserializer.Deserialize<LTTngConfiguration>(configFile);
+                LTTngTestConfiguration baseConfiguration =
+                    _deserializer.Deserialize<LTTngTestConfiguration>(configFile);
 
                 if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
                 {
@@ -70,9 +64,9 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTng
             }
         }
 
-        public static LTTngConfiguration GenerateConfiguration(string configFile)
+        public static LTTngTestConfiguration GenerateConfiguration(string configFile)
         {
-            LTTngConfiguration configuration = ParseConfigFile(configFile);
+            LTTngTestConfiguration configuration = ParseConfigFile(configFile);
             string testResultFolder = Path.Combine(configuration.Test.TestBed, "TestResult");
 
             configuration.LTTngRunConfigurationList = new();
@@ -91,7 +85,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTng
                 string targetAppsRoot = Path.Combine(configuration.Test.TestBed, "TargetApps");
                 string appRoot = Path.Combine(targetAppsRoot, $"gcperfsim-sdk{SDKVersion}-{DotNetInfrastructure.CurrentRID}");
 
-                LTTngRunConfiguration runConfig = new()
+                LTTngTestRunConfiguration runConfig = new()
                 {
                     Test = new()
                     {

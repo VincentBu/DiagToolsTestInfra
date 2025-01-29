@@ -4,11 +4,11 @@ OptionalFeatureContainer: y
 
 DotNet:
   # Full version of .net(core) sdk.
-  SDKVersion:
+  Version:
 
 DiagTool:
   # Full version of diagnostics tools.
-  DiagToolVersion: 
+  Version: 
     
   # diag tools to test, comment out the tools that don't need to be validated
   ToolsToTest: 

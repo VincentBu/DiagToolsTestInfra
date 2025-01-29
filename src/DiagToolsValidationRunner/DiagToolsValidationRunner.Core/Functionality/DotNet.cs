@@ -105,6 +105,28 @@ namespace DiagToolsValidationRunner.Core.Functionality
             }
         }
 
+        public static string GetDotNetExecutableFromEnv(Dictionary<string, string> env, string? targetRID=null)
+        {
+            if (!env.ContainsKey("DOTNET_ROOT"))
+            {
+                throw new Exception($"{nameof(DotNetInfrastructure)}: Please set DOTNET_ROOT");
+            }
+
+            string dotNetRoot = env["DOTNET_ROOT"];
+            if (string.IsNullOrEmpty(targetRID))
+            {
+                targetRID = CurrentRID;
+            }
+            string exeExtension = GetExcutableFileExtensionByRID(targetRID);
+            string dotNetExe = Path.Combine(dotNetRoot, $"dotnet{exeExtension}");
+
+            if (!File.Exists(dotNetExe))
+            {
+                throw new Exception($"{nameof(DotNetInfrastructure)}: dotnet doesn't exist");
+            }
+            return dotNetExe;
+        }
+
         public static void GenerateEnvironmentActivationScript(string targetRID, 
                                                                string scriptPath,
                                                                string dotNetRoot,
