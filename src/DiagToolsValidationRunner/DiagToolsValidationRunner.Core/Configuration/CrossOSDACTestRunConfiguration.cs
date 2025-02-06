@@ -33,7 +33,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
         public required List<string> SDKVersionList;
         public required DotNetToolSetting DotNetDumpSetting;
         public required TargetAppSetting AppSetting;
-        public required List<CrossOSDACTestRunConfiguration> CrossOSDACTestRunConfigurationList;
+        public List<CrossOSDACTestRunConfiguration>? CrossOSDACTestRunConfigurationList;
     }
 
     public static class CrossOSDACTestConfigurationGenerator
@@ -42,48 +42,41 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
 
         private static CrossOSDACTestConfiguration ParseConfigFile(string configFile)
         {
-            try
+            string serializedConfiguration = File.ReadAllText(configFile);
+            CrossOSDACTestConfiguration baseConfiguration =
+                _deserializer.Deserialize<CrossOSDACTestConfiguration>(configFile);
+
+            if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
             {
-                string serializedConfiguration = File.ReadAllText(configFile);
-                CrossOSDACTestConfiguration baseConfiguration =
-                    _deserializer.Deserialize<CrossOSDACTestConfiguration>(configFile);
-
-                if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
-                {
-                    throw new Exception(
-                        $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify testbed");
-                }
-
-                else if (baseConfiguration.SDKVersionList.Count == 0)
-                {
-                    throw new Exception(
-                        $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify at least one SDK Version");
-                }
-
-                else if (string.IsNullOrEmpty(baseConfiguration.DotNetDumpSetting.Version))
-                {
-                    throw new Exception(
-                        $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify tool version");
-                }
-
-                else if (string.IsNullOrEmpty(baseConfiguration.DotNetDumpSetting.Feed))
-                {
-                    throw new Exception(
-                        $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify tool install feed");
-                }
-
-                else if (!(new List<string> { "Debug", "Release" }.Contains(baseConfiguration.AppSetting.BuildConfig)))
-                {
-                    throw new Exception(
-                        $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify valid build config");
-                }
-
-                return baseConfiguration;
+                throw new Exception(
+                    $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify testbed");
             }
-            catch
+
+            else if (baseConfiguration.SDKVersionList.Count == 0)
             {
-                throw;
+                throw new Exception(
+                    $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify at least one SDK Version");
             }
+
+            else if (string.IsNullOrEmpty(baseConfiguration.DotNetDumpSetting.Version))
+            {
+                throw new Exception(
+                    $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify tool version");
+            }
+
+            else if (string.IsNullOrEmpty(baseConfiguration.DotNetDumpSetting.Feed))
+            {
+                throw new Exception(
+                    $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify tool install feed");
+            }
+
+            else if (!(new List<string> { "Debug", "Release" }.Contains(baseConfiguration.AppSetting.BuildConfig)))
+            {
+                throw new Exception(
+                    $"{nameof(CrossOSDACTestConfigurationGenerator)}: Please specify valid build config");
+            }
+
+            return baseConfiguration;
         }
 
         public static CrossOSDACTestConfiguration GenerateConfiguration(string configFile)

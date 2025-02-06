@@ -32,36 +32,29 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTngTest
         
         private static LTTngTestConfiguration ParseConfigFile(string configFile)
         {
-            try
+            string serializedConfiguration = File.ReadAllText(configFile);
+            LTTngTestConfiguration baseConfiguration =
+                _deserializer.Deserialize<LTTngTestConfiguration>(configFile);
+
+            if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
             {
-                string serializedConfiguration = File.ReadAllText(configFile);
-                LTTngTestConfiguration baseConfiguration =
-                    _deserializer.Deserialize<LTTngTestConfiguration>(configFile);
+                throw new Exception(
+                    $"{nameof(LTTngTestConfigurationGenerator)}: Please specify testbed");
+            }
 
-                if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
-                {
-                    throw new Exception(
-                        $"{nameof(LTTngTestConfigurationGenerator)}: Please specify testbed");
-                }
+            else if (!(new List<string> { "Debug", "Release" }.Contains(baseConfiguration.AppSetting.BuildConfig)))
+            {
+                throw new Exception(
+                    $"{nameof(LTTngTestConfigurationGenerator)}: Please specify valid build config");
+            }
 
-                else if (!(new List<string> { "Debug", "Release" }.Contains(baseConfiguration.AppSetting.BuildConfig)))
-                {
-                    throw new Exception(
-                        $"{nameof(LTTngTestConfigurationGenerator)}: Please specify valid build config");
-                }
-
-                else if (baseConfiguration.SDKVersionList.Count == 0)
-                {
-                    throw new Exception(
-                        $"{nameof(LTTngTestConfigurationGenerator)}: Please specify at least one SDK Version");
-                }
+            else if (baseConfiguration.SDKVersionList.Count == 0)
+            {
+                throw new Exception(
+                    $"{nameof(LTTngTestConfigurationGenerator)}: Please specify at least one SDK Version");
+            }
                 
-                return baseConfiguration;
-            }
-            catch
-            {
-                throw;
-            }
+            return baseConfiguration;
         }
 
         public static LTTngTestConfiguration GenerateConfiguration(string configFile)

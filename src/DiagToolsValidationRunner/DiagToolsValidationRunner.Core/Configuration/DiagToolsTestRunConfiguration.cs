@@ -47,65 +47,58 @@ namespace DiagToolsValidationRunner.Core.Configuration.DiagnosticsTest
 
         private static DiagToolsTestRunConfiguration ParseConfigFile(string configFile)
         {
-            try
+            string serializedConfiguration = File.ReadAllText(configFile);
+            DiagToolsTestRunConfiguration configuration =
+                _deserializer.Deserialize<DiagToolsTestRunConfiguration>(configFile);
+
+            if (string.IsNullOrEmpty(configuration.SDKSetting.Version))
             {
-                string serializedConfiguration = File.ReadAllText(configFile);
-                DiagToolsTestRunConfiguration configuration =
-                    _deserializer.Deserialize<DiagToolsTestRunConfiguration>(configFile);
-
-                if (string.IsNullOrEmpty(configuration.SDKSetting.Version))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify .NET SDK version");
-                }
-                else if (string.IsNullOrEmpty(configuration.Test.TestBed))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify testbed");
-                }
-
-                else if (string.IsNullOrEmpty(configuration.ToolSetting.Version))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify diag tool version");
-                }
-
-                else if (string.IsNullOrEmpty(configuration.ToolSetting.Feed))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify diag tool feed");
-                }
-
-                else if (!(new List<string>{"Debug", "Release"}.Contains(configuration.AppSetting.BuildConfig)))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify valid build config");
-                }
-
-                else if (string.IsNullOrEmpty(configuration.SysInfo.OSName))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify OS name");
-                }
-
-                else if (string.IsNullOrEmpty(configuration.SysInfo.CPUArchitecture))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify processor architecture");
-                }
-
-                else if (string.IsNullOrEmpty(configuration.SysInfo.CLIDebugger))
-                {
-                    throw new Exception(
-                        $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify debugger");
-                }
-
-                return configuration;
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify .NET SDK version");
             }
-            catch
+            else if (string.IsNullOrEmpty(configuration.Test.TestBed))
             {
-                throw;
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify testbed");
             }
+
+            else if (string.IsNullOrEmpty(configuration.ToolSetting.Version))
+            {
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify diag tool version");
+            }
+
+            else if (string.IsNullOrEmpty(configuration.ToolSetting.Feed))
+            {
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify diag tool feed");
+            }
+
+            else if (!(new List<string>{"Debug", "Release"}.Contains(configuration.AppSetting.BuildConfig)))
+            {
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify valid build config");
+            }
+
+            else if (string.IsNullOrEmpty(configuration.SysInfo.OSName))
+            {
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify OS name");
+            }
+
+            else if (string.IsNullOrEmpty(configuration.SysInfo.CPUArchitecture))
+            {
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify processor architecture");
+            }
+
+            else if (string.IsNullOrEmpty(configuration.SysInfo.CLIDebugger))
+            {
+                throw new Exception(
+                    $"{nameof(DiagToolsTestConfigurationGenerator)}: Please specify debugger");
+            }
+
+            return configuration;
         }
 
         public static DiagToolsTestRunConfiguration GenerateConfiguration(string configFile)
