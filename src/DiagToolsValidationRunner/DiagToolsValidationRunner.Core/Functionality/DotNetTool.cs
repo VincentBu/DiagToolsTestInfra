@@ -30,7 +30,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                        bool redirectStdOutErr = true,
                                                        bool silent = false)
         {
-            string dotNetExecutable = dotNetEnv.GetValueOrDefault("DOTNET_ROOT", "dotnet");
+            string dotNetExecutable = DotNetInfrastructure.GetDotNetExecutableFromEnv(dotNetEnv);
             string argument =
                 configFilePath switch
                 {
@@ -38,16 +38,13 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     _ => $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed} --configfile {configFilePath}"
                 };
 
-            using (CommandInvoker invoker = new(
-                dotNetExecutable, argument, dotNetEnv, ""))
+            CommandInvoker invoker = new(dotNetExecutable, argument, dotNetEnv, "");
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
         }
 
         public static async Task DownloadPerfcollect(string perfcollectPath)

@@ -16,7 +16,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
             get { return cliDebugger; }
         }
 
-        public void GenerateDebugScript(string targetRID, string scriptPath, List<string> basicSOSCommandList)
+        public static void GenerateDebugScript(string targetRID, string scriptPath, List<string> basicSOSCommandList)
         {
             List<string> preRunCommandList = new();
             List<string> sosCommandList = new();
@@ -66,18 +66,17 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     false => $"-c {dumpPath} -s {debuggerScriptPath}"
                 };
 
-            using (CommandInvoker invoker = new(cliDebugger,
-                                                arguments,
-                                                env,
-                                                workingDirectory))
+            CommandInvoker invoker = new(cliDebugger,
+                                         arguments,
+                                         env,
+                                         workingDirectory);
+            
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
         }
 
         public CommandInvokeResult DebugAttachedProcess(Dictionary<string, string> env,
@@ -95,18 +94,16 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     false => $"-s {debuggerScriptPath} -p {pid}"
                 };
 
-            using (CommandInvoker invoker = new(cliDebugger,
-                                                arguments,
-                                                env,
-                                                workingDirectory))
+            CommandInvoker invoker = new(cliDebugger,
+                                         arguments,
+                                         env,
+                                         workingDirectory);
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
         }
 
         public CommandInvokeResult DebugLaunchable(Dictionary<string, string> env,
@@ -124,18 +121,16 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     false => $"-s {debuggerScriptPath} -o \"run\"  {launchable}"
                 };
 
-            using (CommandInvoker invoker = new(cliDebugger,
-                                                arguments,
-                                                env,
-                                                workingDirectory))
+            CommandInvoker invoker = new(cliDebugger,
+                                         arguments,
+                                         env,
+                                         workingDirectory);
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
         }
     }
 }

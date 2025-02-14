@@ -13,8 +13,8 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
 
     public class TestSetting : BaseTestSetting
     {
-        public string DumpFolder = String.Empty;
-        public string AnalysisOutputFolder = String.Empty;
+        public string LiveSessionDebuggingOutputFolder = String.Empty;
+        public string DumpDebuggingOutputFolder = String.Empty;
     }
 
     public class SystemInformation : BaseSystemInformation
@@ -22,7 +22,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
         public required string CLIDebugger;
     }
 
-    public class DebuggerExtensionSetting: DotNetToolSetting
+    public class ToolSetting: DotNetToolSetting
     {
         public required string UserName;
         public required string Token;
@@ -32,7 +32,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
     {
         public required TestSetting Test;
         public required DotNetSDKSetting SDKSetting;
-        public required DebuggerExtensionSetting DebuggerExtensionSetting;
+        public required ToolSetting DebuggerExtensionSetting;
         public required TargetAppSetting AppSetting;
         public required SystemInformation SysInfo;
 
@@ -42,7 +42,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
     {
         public required TestSetting Test;
         public required List<string> SDKVersionList;
-        public required DebuggerExtensionSetting DebuggerExtensionSetting;
+        public required ToolSetting DebuggerExtensionSetting;
         public required TargetAppSetting AppSetting;
         public required SystemInformation SysInfo;
         public List<DebuggerExtensionTestRunConfiguration> DebuggerExtensionTestRunConfigurationList = new();
@@ -56,7 +56,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
         {
             string serializedConfiguration = File.ReadAllText(configFile);
             DebuggerExtensionTestConfiguration baseConfiguration =
-                _deserializer.Deserialize<DebuggerExtensionTestConfiguration>(configFile);
+                _deserializer.Deserialize<DebuggerExtensionTestConfiguration>(serializedConfiguration);
 
             if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
             {
@@ -111,8 +111,9 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
             foreach (string SDKVersion in configuration.SDKVersionList)
             {
                 string testName = $"DebuggerExtension-SDK{SDKVersion}";
-                string dumpFolder = Path.Combine(testResultFolder, $"dumps-sdk{SDKVersion}");
-                string analysisOutputFolder = Path.Combine(testResultFolder, $"analysis-sdk{SDKVersion}");
+                string dumpDebuggingOutputFolder = Path.Combine(testResultFolder, $"DumpDebugging-sdk{SDKVersion}");
+                string liveSessionDebuggingOutputFolder = Path.Combine(testResultFolder, 
+                                                                       $"LiveSessionDebugging-sdk{SDKVersion}");
 
                 string dotNetRoot = Path.Combine(configuration.Test.TestBed, $"DotNetSDK-{SDKVersion}");
 
@@ -125,8 +126,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
                 }
                 env["DOTNET_ROOT"] = dotNetRoot;
 
-                string targetAppsRoot = Path.Combine(testResultFolder, "TargetApps");
-                string nativeaotAppRoot = Path.Combine(targetAppsRoot, $"nativeaot-sdk{SDKVersion}");
+                string nativeaotAppRoot = Path.Combine(configuration.Test.TestBed, $"nativeaot-sdk{SDKVersion}");
 
                 DebuggerExtensionTestRunConfiguration runConfig = new()
                 {
@@ -135,8 +135,8 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
                         TestBed = configuration.Test.TestBed,
                         TestResultFolder = testResultFolder,
                         TestName = testName,
-                        DumpFolder = dumpFolder,
-                        AnalysisOutputFolder = analysisOutputFolder
+                        LiveSessionDebuggingOutputFolder = liveSessionDebuggingOutputFolder,
+                        DumpDebuggingOutputFolder = dumpDebuggingOutputFolder
                     },
                     SDKSetting = new()
                     {
@@ -159,9 +159,11 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
                     AppSetting = new()
                     {
                         BuildConfig = configuration.AppSetting.BuildConfig,
-                        NativeAOTApp = new(env, "console", nativeaotAppRoot),
+                        NativeAOTApp = new(env, "console", nativeaotAppRoot, "nativeaot"),
                     }
                 };
+
+                configuration.DebuggerExtensionTestRunConfigurationList.Add(runConfig);
             }
             return configuration;
         }

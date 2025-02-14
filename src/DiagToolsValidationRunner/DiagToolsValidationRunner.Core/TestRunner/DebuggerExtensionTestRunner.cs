@@ -58,9 +58,8 @@ $"""
                                                                 string baseNativeAOTAppSrcPath)
         {
             // Create analysis output folder and dump folder
-            Directory.CreateDirectory(runConfig.Test.AnalysisOutputFolder);
-            Directory.CreateDirectory(runConfig.Test.DumpFolder);
-
+            Directory.CreateDirectory(runConfig.Test.DumpDebuggingOutputFolder);
+            Directory.CreateDirectory(runConfig.Test.LiveSessionDebuggingOutputFolder);
 
             // Generate environment activation script
             string scriptPath = Path.Combine();
@@ -112,14 +111,14 @@ $"""
                                                       runConfig.DebuggerExtensionSetting.Feed,
                                                       runConfig.DebuggerExtensionSetting.Version,
                                                       "dotnet-debugger-extensions",
-                                                      nuGetPath);
+                                                      configFilePath: nuGetPath);
 
-            // Install extension
+            // Run installer
             string toolName = "dotnet-debugger-extensions";
             string toolILPath = DotNetTool.GetToolIL(RunConfig.DebuggerExtensionSetting.ToolRoot,
                                                      toolName,
                                                      RunConfig.DebuggerExtensionSetting.Version);
-            // Install extension
+
             string dotNetExecutable = DotNetInfrastructure.GetDotNetExecutableFromEnv(RunConfig.SysInfo.EnvironmentVariables);
             CommandInvoker extensionInstallInvoker = new(dotNetExecutable,
                                                          $"{toolILPath} install --accept-license-agreement",
@@ -129,20 +128,20 @@ $"""
 
         private IEnumerable<CommandInvokeResult> TestByDebuggingDump()
         {
+            Directory.CreateDirectory(RunConfig.Test.DumpDebuggingOutputFolder);
             // Active dump and stresslog generated environment
             Dictionary<string, string> env = new(RunConfig.SysInfo.EnvironmentVariables);
             if (DotNetInfrastructure.CurrentRID.Contains("win"))
             {
-                DotNetInfrastructure.ActiveWin32DumpGeneratingEnvironment(RunConfig.Test.DumpFolder);
+                DotNetInfrastructure.ActiveWin32DumpGeneratingEnvironment(RunConfig.Test.DumpDebuggingOutputFolder);
             }
             else
             {
-                string linuxDumpPath = Path.Combine(RunConfig.Test.DumpFolder, $"dump-debugging.dmp");
+                string linuxDumpPath = Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, $"nativeaot-dump.dmp");
                 DotNetInfrastructure.ActiveDotNetDumpGeneratingEnvironment(env, linuxDumpPath);
             }
 
-            string stressLogPath = Path.Combine(RunConfig.Test.AnalysisOutputFolder, $"StressLog-dump-debugging.log");
-            DotNetInfrastructure.ActiveStressLogEnvironment(env, stressLogPath);
+            DotNetInfrastructure.ActiveStressLogEnvironment(env);
 
             // Run nativeaot
 
@@ -153,49 +152,61 @@ $"""
             yield return nativeaotRunInvoker.InvokeCommand(true);
             string dumpPath = DotNetInfrastructure.CurrentRID.Contains("win") switch
             {
-                true => Directory.GetFiles(RunConfig.Test.DumpFolder, "*.dmp").FirstOrDefault(""),
-                false => Path.Combine(RunConfig.Test.DumpFolder, $"dump-debugging.dmp")
+                true => Directory.GetFiles(RunConfig.Test.DumpDebuggingOutputFolder, "*.dmp").FirstOrDefault(""),
+                false => Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, $"nativeaot-dump.dmp")
             };
 
             // Generate debug script
-            string debugDumpScriptPath = Path.Combine(RunConfig.Test.TestResultFolder, "dump-debug-script.txt");
+            string debugDumpScriptPath = Path.Combine(RunConfig.Test.TestResultFolder, "debug-script.txt");
             SOSDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
-            debugger.GenerateDebugScript(DotNetInfrastructure.CurrentRID, debugDumpScriptPath, SOSDebugCommandList);
-            yield return debugger.DebugDump(env, DotNetInfrastructure.CurrentRID, "", dumpPath, debugDumpScriptPath);
+            SOSDebugger.GenerateDebugScript(DotNetInfrastructure.CurrentRID, debugDumpScriptPath, SOSDebugCommandList);
+            yield return debugger.DebugDump(env,
+                                            DotNetInfrastructure.CurrentRID,
+                                            RunConfig.Test.DumpDebuggingOutputFolder,
+                                            dumpPath,
+                                            debugDumpScriptPath);
         }
 
         private IEnumerable<CommandInvokeResult> TestByDebuggingProcess()
         {
+            Directory.CreateDirectory(RunConfig.Test.LiveSessionDebuggingOutputFolder);
             // Active stresslog generated environment
             Dictionary<string, string> env = new(RunConfig.SysInfo.EnvironmentVariables);
 
-            string stressLogPath = Path.Combine(RunConfig.Test.AnalysisOutputFolder, $"StressLog-process-debugging.log");
-            DotNetInfrastructure.ActiveStressLogEnvironment(env, stressLogPath);
+            if (DotNetInfrastructure.CurrentRID.Contains("win"))
+            {
+                DotNetInfrastructure.ActiveWin32DumpGeneratingEnvironment(RunConfig.Test.LiveSessionDebuggingOutputFolder);
+            }
+
+            DotNetInfrastructure.ActiveStressLogEnvironment(env);
 
             // Startup nativeaot with debugger
             string nativeaotExecutablePath = RunConfig.AppSetting.NativeAOTApp.GetNativeAppExecutable(RunConfig.AppSetting.BuildConfig,
                                                                                                       DotNetInfrastructure.CurrentRID);
-            string debugProcessScriptPath = Path.Combine(RunConfig.Test.TestResultFolder, "process-debug-script.txt");
+            string debugProcessScriptPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder,
+                                                         "debug-script.txt");
             SOSDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
-            debugger.GenerateDebugScript(DotNetInfrastructure.CurrentRID, debugProcessScriptPath, SOSDebugCommandList);
+            SOSDebugger.GenerateDebugScript(DotNetInfrastructure.CurrentRID, debugProcessScriptPath, SOSDebugCommandList);
             yield return debugger.DebugLaunchable(env,
                                                   DotNetInfrastructure.CurrentRID,
-                                                  "",
+                                                  RunConfig.Test.LiveSessionDebuggingOutputFolder,
                                                   nativeaotExecutablePath,
                                                   debugProcessScriptPath);
         }
 
         public void TestDebuggerExtension()
         {
-            string testDumpDebuggingLogPath = Path.Combine(RunConfig.Test.AnalysisOutputFolder, "debug-dump.log");
+            string testDumpDebuggingLogPath = Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder,
+                                                           "debug-dump.log");
             // Ignore error since running nativeaot can raise exception which is expected.
             CommandInvokeTaskRunner dumpDebuggingTaskRunner = new(testDumpDebuggingLogPath, true);
             dumpDebuggingTaskRunner.Run(TestByDebuggingDump());
 
-            string testProcessDebuggingLogPath = Path.Combine(RunConfig.Test.AnalysisOutputFolder, "debug-process.log");
+            string testProcessDebuggingLogPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder,
+                                                              "debug-process.log");
             // Ignore error since running nativeaot can raise exception which is expected.
-            CommandInvokeTaskRunner processDebuggingTaskRunner = new(testProcessDebuggingLogPath);
-            dumpDebuggingTaskRunner.Run(TestByDebuggingProcess());
+            CommandInvokeTaskRunner processDebuggingTaskRunner = new(testProcessDebuggingLogPath, true);
+            processDebuggingTaskRunner.Run(TestByDebuggingProcess());
         }
     }
 }

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DiagToolsValidationRunner": {
+      "commandName": "Project",
+      "commandLineArgs": "debuggerext-test -c \"C:\\Workspace\\DiagTool\\TestOutput\\DebuggerExt\\DebuggerExtensionTest.yaml\""
+    }
+  }
+}

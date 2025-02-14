@@ -89,7 +89,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
             string SDKExtension = GetCompressionExtensionByRID(targetRID);
             string downloadPath = Path.GetTempFileName() + SDKExtension;
 
-            Utilities.Download(downloadLink, downloadPath).RunSynchronously();
+            Task.WaitAll(Utilities.Download(downloadLink, downloadPath));
 
             if (downloadPath.EndsWith(".tar.gz"))
             {
@@ -121,10 +121,6 @@ namespace DiagToolsValidationRunner.Core.Functionality
             string exeExtension = GetExcutableFileExtensionByRID(targetRID);
             string dotNetExe = Path.Combine(dotNetRoot, $"dotnet{exeExtension}");
 
-            if (!File.Exists(dotNetExe))
-            {
-                throw new Exception($"{nameof(DotNetInfrastructure)}: dotnet doesn't exist");
-            }
             return dotNetExe;
         }
 
@@ -181,13 +177,11 @@ namespace DiagToolsValidationRunner.Core.Functionality
 
         }
 
-        public static void ActiveStressLogEnvironment(Dictionary<string, string> env,
-                                                      string logFilePath)
+        public static void ActiveStressLogEnvironment(Dictionary<string, string> env)
         {
             env["DOTNET_StressLog"] = "1";
             env["DOTNET_StressLogLevel"] = "10";
             env["DOTNET_TotalStressLogSize"] = "8196";
-            env["DOTNET_StressLogFilename"] = logFilePath;
         }
     }
 }

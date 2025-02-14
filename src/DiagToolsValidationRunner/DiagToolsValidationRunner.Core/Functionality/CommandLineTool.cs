@@ -56,7 +56,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                         logContent.AppendLine($"Inner Exception:\n:{result.Exn.InnerException}");
                     }
                     logContent.AppendLine("\n");
-                    File.WriteAllText(LoggerPath, logContent.ToString());
+                    File.AppendAllText(LoggerPath, logContent.ToString());
 
                     if (!String.IsNullOrEmpty(result.StandardError) || result.Exn != null)
                     {
@@ -73,7 +73,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     logContent.AppendLine($"Run into error: {ex.Message}");
                     logContent.AppendLine($"Stack Trace:\n{ex.StackTrace}");
                     logContent.AppendLine($"Inner Exception:\n{ex.InnerException}");
-                    File.WriteAllText(LoggerPath, logContent.ToString());
+                    File.AppendAllText(LoggerPath, logContent.ToString());
                     break;
                 }
             }
@@ -161,7 +161,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
             proc.StartInfo.RedirectStandardOutput = redirectStdOutErr;
             proc.StartInfo.RedirectStandardError = redirectStdOutErr;
 
-            Console.WriteLine($"Run command: {Command}");
+            Console.WriteLine($"\nRun command: {Command}");
             proc.Start();
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();

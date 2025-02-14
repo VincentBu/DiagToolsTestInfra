@@ -52,7 +52,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
         {
             string excutableFileExtension = DotNetInfrastructure.GetExcutableFileExtensionByRID(targetRID);
             string excutable = Path.Combine(symbolFolder, $"{appName}{excutableFileExtension}");
-            if (!Directory.Exists(excutable))
+            if (!File.Exists(excutable))
             {
                 throw new Exception($"{nameof(DotNetApp)}: Executable {excutable} doesn't exist in {symbolFolder}");
             }
@@ -63,7 +63,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
         {
             string excutableFileExtension = DotNetInfrastructure.GetExcutableFileExtensionByRID(targetRID);
             string excutable = Path.Combine(nativeSymbolFolder, $"{appName}{excutableFileExtension}");
-            if (!Directory.Exists(excutable))
+            if (!File.Exists(excutable))
             {
                 throw new Exception($"{nameof(DotNetApp)}: Native executable {excutable} doesn't exist in {nativeSymbolFolder}");
             }
@@ -129,18 +129,16 @@ namespace DiagToolsValidationRunner.Core.Functionality
 
         public CommandInvokeResult CreateApp(bool redirectStdOutErr = true, bool silent = false)
         {
-            using (CommandInvoker invoker = new(DotNetExecutable,
-                                                $"new {AppTemplate} -o {AppRoot} -n {AppName}",
-                                                DotNetEnv,
-                                                ""))
+            CommandInvoker invoker = new(DotNetExecutable,
+                                         $"new {AppTemplate} -o {AppRoot} -n {AppName} --force",
+                                         DotNetEnv,
+                                         "");
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
         }
 
         public CommandInvokeResult BuildApp(string buildConfig,
@@ -148,18 +146,17 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                             bool redirectStdOutErr = true,
                                             bool silent = false)
         {
-            using (CommandInvoker invoker = new(DotNetExecutable,
-                                                $"build -r {targetRID} -c {buildConfig}",
-                                                DotNetEnv,
-                                                AppRoot))
+            CommandInvoker invoker = new(DotNetExecutable,
+                                         $"build -r {targetRID} -c {buildConfig}",
+                                         DotNetEnv,
+                                         AppRoot);
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
+            
         }
 
         public CommandInvokeResult PublishApp(string buildConfig,
@@ -167,18 +164,16 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                               bool redirectStdOutErr = true,
                                               bool silent = false)
         {
-            using (CommandInvoker invoker = new(DotNetExecutable,
-                                                $"publish -r {targetRID} -c {buildConfig}",
-                                                DotNetEnv,
-                                                AppRoot))
+            CommandInvoker invoker = new(DotNetExecutable,
+                                         $"publish -r {targetRID} -c {buildConfig}",
+                                         DotNetEnv,
+                                         AppRoot);
+            if (!silent)
             {
-                if (!silent)
-                {
-                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-                }
-                return invoker.InvokeCommand(redirectStdOutErr);
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
+            return invoker.InvokeCommand(redirectStdOutErr);
         }
     }
 }
