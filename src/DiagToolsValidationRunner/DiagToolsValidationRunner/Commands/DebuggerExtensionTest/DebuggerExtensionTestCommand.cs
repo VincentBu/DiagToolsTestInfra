@@ -25,11 +25,14 @@ namespace DiagToolsValidationRunner.Commands.DebuggerExtensionTest
 
         public override int Execute(CommandContext context, DebuggerExtensionTestSettings settings)
         {
-            bool IsAdministrator = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-            if (!IsAdministrator)
+            if (OperatingSystem.IsWindows())
             {
-                AnsiConsole.WriteLine("Not running in admin mode - please elevate privileges to run this process.");
-                return -1;
+                bool IsAdministrator = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+                if (!IsAdministrator)
+                {
+                    AnsiConsole.WriteLine("Not running in admin mode - please elevate privileges to run this process.");
+                    return -1;
+                }
             }
 
             DebuggerExtensionTestConfiguration config =

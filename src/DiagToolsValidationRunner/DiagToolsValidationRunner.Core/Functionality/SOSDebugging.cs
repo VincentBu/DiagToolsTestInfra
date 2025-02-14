@@ -16,41 +16,6 @@ namespace DiagToolsValidationRunner.Core.Functionality
             get { return cliDebugger; }
         }
 
-        public static void GenerateDebugScript(string targetRID, string scriptPath, List<string> basicSOSCommandList)
-        {
-            List<string> preRunCommandList = new();
-            List<string> sosCommandList = new();
-            List<string> exitCommandList = new();
-            if (targetRID.Contains("win"))
-            {
-                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
-                preRunCommandList = [
-                    ".unload sos",
-                    $".load {sosExtension}"
-                ];
-                sosCommandList = basicSOSCommandList
-                    .Select(command => $"!{command}")
-                    .ToList();
-                exitCommandList = [
-                    ".detach",
-                    "qq"
-                ];
-            }
-            else
-            {
-                sosCommandList = basicSOSCommandList;
-                exitCommandList = ["exit"];
-            }
-
-            List<string> debuggingCommandList = preRunCommandList
-                .Concat(sosCommandList)
-                .Concat(exitCommandList)
-                .ToList();
-
-            File.WriteAllLines(scriptPath, debuggingCommandList);
-        }
-
         public CommandInvokeResult DebugDump(Dictionary<string, string> env,
                                              string targetRID,
                                              string workingDirectory,
@@ -63,7 +28,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                 targetRID.Contains("win") switch
                 {
                     true => $"-cf {debuggerScriptPath} -z {dumpPath}",
-                    false => $"-c {dumpPath} -s {debuggerScriptPath}"
+                    false => $"-c {dumpPath} -s {debuggerScriptPath} --batch"
                 };
 
             CommandInvoker invoker = new(cliDebugger,
@@ -91,7 +56,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                 targetRID.Contains("win") switch
                 {
                     true => $"-cf {debuggerScriptPath} -p {pid}",
-                    false => $"-s {debuggerScriptPath} -p {pid}"
+                    false => $"-s {debuggerScriptPath} -p {pid}  --batch"
                 };
 
             CommandInvoker invoker = new(cliDebugger,
@@ -118,7 +83,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                 targetRID.Contains("win") switch
                 {
                     true => $"-g -cf {debuggerScriptPath} {launchable}",
-                    false => $"-s {debuggerScriptPath} -o \"run\"  {launchable}"
+                    false => $"-s {debuggerScriptPath} --batch {launchable}"
                 };
 
             CommandInvoker invoker = new(cliDebugger,

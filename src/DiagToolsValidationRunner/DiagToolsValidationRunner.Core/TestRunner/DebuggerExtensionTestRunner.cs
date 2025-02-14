@@ -62,7 +62,8 @@ $"""
             Directory.CreateDirectory(runConfig.Test.LiveSessionDebuggingOutputFolder);
 
             // Generate environment activation script
-            string scriptPath = Path.Combine();
+            string scriptPath = Path.Combine(RunConfig.Test.TestBed,
+                                             $"env_activation-sdk{RunConfig.SDKSetting.Version}");
             DotNetInfrastructure.GenerateEnvironmentActivationScript(DotNetInfrastructure.CurrentRID,
                                                                      scriptPath,
                                                                      runConfig.SDKSetting.DotNetRoot,
@@ -129,6 +130,41 @@ $"""
         private IEnumerable<CommandInvokeResult> TestByDebuggingDump()
         {
             Directory.CreateDirectory(RunConfig.Test.DumpDebuggingOutputFolder);
+
+            // Generate debug script
+            string debugDumpScriptPath = Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, "debug-dump-script.txt");
+            List<string> preRunCommandList = new();
+            List<string> sosCommandList = new();
+            List<string> exitCommandList = new();
+            if (DotNetInfrastructure.CurrentRID.Contains("win"))
+            {
+                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
+                preRunCommandList = [
+                    ".unload sos",
+                    $".load {sosExtension}"
+                ];
+                sosCommandList = SOSDebugCommandList
+                    .Select(command => $"!{command}")
+                    .ToList();
+                exitCommandList = [
+                    ".detach",
+                    "qq"
+                ];
+            }
+            else
+            {
+                sosCommandList = SOSDebugCommandList;
+                exitCommandList = ["exit"];
+            }
+
+            List<string> debuggingCommandList = preRunCommandList
+                .Concat(sosCommandList)
+                .Concat(exitCommandList)
+                .ToList();
+
+            File.WriteAllLines(debugDumpScriptPath, debuggingCommandList);
+
             // Active dump and stresslog generated environment
             Dictionary<string, string> env = new(RunConfig.SysInfo.EnvironmentVariables);
             if (DotNetInfrastructure.CurrentRID.Contains("win"))
@@ -156,10 +192,7 @@ $"""
                 false => Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, $"nativeaot-dump.dmp")
             };
 
-            // Generate debug script
-            string debugDumpScriptPath = Path.Combine(RunConfig.Test.TestResultFolder, "debug-script.txt");
             SOSDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
-            SOSDebugger.GenerateDebugScript(DotNetInfrastructure.CurrentRID, debugDumpScriptPath, SOSDebugCommandList);
             yield return debugger.DebugDump(env,
                                             DotNetInfrastructure.CurrentRID,
                                             RunConfig.Test.DumpDebuggingOutputFolder,
@@ -170,6 +203,44 @@ $"""
         private IEnumerable<CommandInvokeResult> TestByDebuggingProcess()
         {
             Directory.CreateDirectory(RunConfig.Test.LiveSessionDebuggingOutputFolder);
+
+            // Generate debug script
+            string debugProcessScriptPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder, "debug-process-script.txt");
+            List<string> preRunCommandList = new();
+            List<string> sosCommandList = new();
+            List<string> exitCommandList = new();
+            if (DotNetInfrastructure.CurrentRID.Contains("win"))
+            {
+                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
+                preRunCommandList = [
+                    ".unload sos",
+                    $".load {sosExtension}"
+                ];
+                sosCommandList = SOSDebugCommandList
+                    .Select(command => $"!{command}")
+                    .ToList();
+                exitCommandList = [
+                    ".detach",
+                    "qq"
+                ];
+            }
+            else
+            {
+                preRunCommandList = [
+                    "run"
+                ];
+                sosCommandList = SOSDebugCommandList;
+                exitCommandList = ["exit"];
+            }
+
+            List<string> debuggingCommandList = preRunCommandList
+                .Concat(sosCommandList)
+                .Concat(exitCommandList)
+                .ToList();
+
+            File.WriteAllLines(debugProcessScriptPath, debuggingCommandList);
+
             // Active stresslog generated environment
             Dictionary<string, string> env = new(RunConfig.SysInfo.EnvironmentVariables);
 
@@ -183,10 +254,8 @@ $"""
             // Startup nativeaot with debugger
             string nativeaotExecutablePath = RunConfig.AppSetting.NativeAOTApp.GetNativeAppExecutable(RunConfig.AppSetting.BuildConfig,
                                                                                                       DotNetInfrastructure.CurrentRID);
-            string debugProcessScriptPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder,
-                                                         "debug-script.txt");
+
             SOSDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
-            SOSDebugger.GenerateDebugScript(DotNetInfrastructure.CurrentRID, debugProcessScriptPath, SOSDebugCommandList);
             yield return debugger.DebugLaunchable(env,
                                                   DotNetInfrastructure.CurrentRID,
                                                   RunConfig.Test.LiveSessionDebuggingOutputFolder,
