@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.Win32;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace DiagToolsValidationRunner.Core.Functionality
@@ -128,13 +129,15 @@ namespace DiagToolsValidationRunner.Core.Functionality
         }
 
         public static void GenerateEnvironmentActivationScript(string targetRID, 
-                                                               string scriptPath,
+                                                               string scriptPathWithoutExtension,
                                                                string dotNetRoot,
                                                                string? toolRoot=null)
         {
+            string scriptPath = scriptPathWithoutExtension;
             StringBuilder content = new();
             if (targetRID.Contains("win"))
             {
+                scriptPath += ".ps1";
                 content.AppendLine($"$Env:DOTNET_ROOT=\"{dotNetRoot}\"");
                 content.AppendLine($"$Env:Path+=\";{dotNetRoot}\"");
                 if (!String.IsNullOrEmpty(toolRoot))
@@ -144,6 +147,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
             }
             else
             {
+                scriptPath += ".sh";
                 content.AppendLine($"export DOTNET_ROOT={dotNetRoot}");
                 content.AppendLine($"export PATH=$PATH:{dotNetRoot}");
                 if (!String.IsNullOrEmpty(toolRoot))
@@ -164,15 +168,17 @@ namespace DiagToolsValidationRunner.Core.Functionality
 
         public static void ActiveWin32DumpGeneratingEnvironment(string dumpFolder)
         {
-#if WINDOWS
-            RegistryKey registrykeyHKLM = Registry.LocalMachine;
-            string LocalDumpsKeyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps";
-            using (RegistryKey? LocalDumpsKey = registrykeyHKLM.OpenSubKey(LocalDumpsKeyPath, true))
+            if (OperatingSystem.IsWindows())
             {
-                LocalDumpsKey!.SetValue("DumpFolder", dumpFolder, RegistryValueKind.ExpandString);
-                LocalDumpsKey!.SetValue("DumpType", 2, RegistryValueKind.DWord);
+                RegistryKey registrykeyHKLM = Registry.LocalMachine;
+                string LocalDumpsKeyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps";
+                using (RegistryKey? LocalDumpsKey = registrykeyHKLM.OpenSubKey(LocalDumpsKeyPath, true))
+                {
+                    LocalDumpsKey!.SetValue("DumpFolder", dumpFolder, RegistryValueKind.ExpandString);
+                    LocalDumpsKey!.SetValue("DumpType", 2, RegistryValueKind.DWord);
+                }
             }
-#endif
+
         }
 
         public static void ActiveStressLogEnvironment(Dictionary<string, string> env,

@@ -8,13 +8,13 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
 {
     public class TargetAppSetting : BaseTargetAppSetting
     {
-        public DotNetApp? NativeAOTApp;
+        public DotNetApp NativeAOTApp = new();
     }
 
     public class TestSetting : BaseTestSetting
     {
-        public string? DumpFolder;
-        public string? AnalysisOutputFolder;
+        public string DumpFolder = String.Empty;
+        public string AnalysisOutputFolder = String.Empty;
     }
 
     public class SystemInformation : BaseSystemInformation
@@ -45,7 +45,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
         public required DebuggerExtensionSetting DebuggerExtensionSetting;
         public required TargetAppSetting AppSetting;
         public required SystemInformation SysInfo;
-        public List<DebuggerExtensionTestRunConfiguration>? DebuggerExtensionTestRunConfigurationList;
+        public List<DebuggerExtensionTestRunConfiguration> DebuggerExtensionTestRunConfigurationList = new();
     }
 
     public static class DebuggerExtensionTestConfigurationGenerator
@@ -107,8 +107,6 @@ namespace DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest
         {
             DebuggerExtensionTestConfiguration configuration = ParseConfigFile(configFile);
             string testResultFolder = Path.Combine(configuration.Test.TestBed, "TestResult");
-
-            configuration.DebuggerExtensionTestRunConfigurationList = new();
 
             foreach (string SDKVersion in configuration.SDKVersionList)
             {

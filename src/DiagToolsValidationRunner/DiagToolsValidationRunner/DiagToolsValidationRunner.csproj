@@ -11,4 +11,14 @@
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DiagToolsValidationRunner.Core\DiagToolsValidationRunner.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Commands\DebuggerExtensionTest\TargesAppsSrc\nativeaot\Program.cs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

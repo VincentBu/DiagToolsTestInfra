@@ -28,8 +28,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                        string toolName,
                                                        string? configFilePath=null,
                                                        bool redirectStdOutErr = true,
-                                                       List<DataReceivedEventHandler>? outputHandlerList = null,
-                                                       List<DataReceivedEventHandler>? errorHandlerList = null)
+                                                       bool silent = false)
         {
             string dotNetExecutable = dotNetEnv.GetValueOrDefault("DOTNET_ROOT", "dotnet");
             string argument =
@@ -42,7 +41,12 @@ namespace DiagToolsValidationRunner.Core.Functionality
             using (CommandInvoker invoker = new(
                 dotNetExecutable, argument, dotNetEnv, ""))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
 

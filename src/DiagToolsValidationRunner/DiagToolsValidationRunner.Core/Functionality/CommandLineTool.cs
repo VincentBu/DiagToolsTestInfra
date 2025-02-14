@@ -5,37 +5,78 @@ namespace DiagToolsValidationRunner.Core.Functionality
 {
     public class CommandInvokeResult
     {
-        private readonly string command;
-        private readonly string stdout;
-        private readonly string stderr;
-        private readonly int pid;
+        public string Command { get; init; }
+        public string StandardOutput { get; init; }
+        public string StandardError { get; init; }
+        public int ProcessID { get; init; }
+        public Exception? Exn { get; init; }
 
-        public string Command
+        public CommandInvokeResult(string command, string stdout, string stderr, int pid, Exception? ex = null)
         {
-            get { return command.ToString(); }
+            this.Command = command;
+            this.StandardOutput = stdout;
+            this.StandardError = stderr;
+            this.ProcessID = pid;
+            this.Exn = ex;
+        }
+    }
+
+    public class CommandInvokeTaskRunner
+    {
+        public string LoggerPath { get; set; } = string.Empty;
+        private bool IgnoreError = false;
+
+        public CommandInvokeTaskRunner(string loggerPath, bool ignoreError = false)
+        {
+            LoggerPath = loggerPath;
+            IgnoreError = ignoreError;
         }
 
-        public string StandardOutput
+        public void Run(IEnumerable<CommandInvokeResult> commandInvokeTask)
         {
-            get { return stdout.ToString(); }
-        }
+            IEnumerator<CommandInvokeResult> enumrator = commandInvokeTask.GetEnumerator();
+            while (true)
+            {
+                try
+                {
+                    if (!enumrator.MoveNext())
+                    {
+                        // Break when move to end
+                        break;
+                    }
+                    CommandInvokeResult result = enumrator.Current;
+                    StringBuilder logContent = new();
+                    logContent.AppendLine($"Run Command: {result.Command}");
+                    logContent.AppendLine(result.StandardOutput);
+                    logContent.AppendLine(result.StandardError);
+                    if (result.Exn != null)
+                    {
+                        logContent.AppendLine($"Error Message:{result.Exn.Message}");
+                        logContent.AppendLine($"Stack Trace:\n{result.Exn.StackTrace}");
+                        logContent.AppendLine($"Inner Exception:\n:{result.Exn.InnerException}");
+                    }
+                    logContent.AppendLine("\n");
+                    File.WriteAllText(LoggerPath, logContent.ToString());
 
-        public string StandardError
-        {
-            get { return stderr.ToString(); }
-        }
-
-        public int PID
-        {
-            get { return pid; }
-        }
-
-        public CommandInvokeResult(string command, string stdout, string stderr, int pid)
-        {
-            this.command = command;
-            this.stdout = stdout;
-            this.stderr = stderr;
-            this.pid = pid;
+                    if (!String.IsNullOrEmpty(result.StandardError) || result.Exn != null)
+                    {
+                        if (!IgnoreError)
+                        {
+                            Console.WriteLine($"Run Command {result.Command} but get error! See {LoggerPath} for details.");
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    StringBuilder logContent = new();
+                    logContent.AppendLine($"Run into error: {ex.Message}");
+                    logContent.AppendLine($"Stack Trace:\n{ex.StackTrace}");
+                    logContent.AppendLine($"Inner Exception:\n{ex.InnerException}");
+                    File.WriteAllText(LoggerPath, logContent.ToString());
+                    break;
+                }
+            }
         }
     }
 
@@ -95,9 +136,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
             }
         }
 
-        public void InvokeCommandWithOutWaitingForExit(bool redirectStdOutErr,
-                                                       List<DataReceivedEventHandler>? outputHandlerList = null,
-                                                       List<DataReceivedEventHandler>? errorHandlerList = null)
+        public void InvokeCommandWithOutWaitingForExit(bool redirectStdOutErr = true)
         {
             if (redirectStdOutErr)
             {
@@ -122,30 +161,27 @@ namespace DiagToolsValidationRunner.Core.Functionality
             proc.StartInfo.RedirectStandardOutput = redirectStdOutErr;
             proc.StartInfo.RedirectStandardError = redirectStdOutErr;
 
-            if (outputHandlerList != null)
-            {
-                outputHandlerList.ForEach(outputHandler => proc.OutputDataReceived += outputHandler);
-            }
-            if (errorHandlerList != null)
-            {
-                errorHandlerList.ForEach(errorHandler => proc.ErrorDataReceived += errorHandler);
-            }
             Console.WriteLine($"Run command: {Command}");
             proc.Start();
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
         }
 
-        public CommandInvokeResult InvokeCommand(bool redirectStdOutErr,
-                                                 List<DataReceivedEventHandler>? outputHandlerList = null, 
-                                                 List<DataReceivedEventHandler>? errorHandlerList = null)
+        public CommandInvokeResult InvokeCommand(bool redirectStdOutErr)
         {
-            InvokeCommandWithOutWaitingForExit(redirectStdOutErr, outputHandlerList, errorHandlerList);
+            try
+            {
+                InvokeCommandWithOutWaitingForExit(redirectStdOutErr);
 
-            int pid = proc.Id;
-            proc.WaitForExit();
-            proc.Dispose();
-            return new(Command, stdout.ToString(), stderr.ToString(), pid);
+                int pid = proc.Id;
+                proc.WaitForExit();
+                proc.Dispose();
+                return new(Command, stdout.ToString(), stderr.ToString(), pid);
+            }
+            catch (Exception ex)
+            {
+                return new(Command, stdout.ToString(), stderr.ToString(), -1, ex);
+            }
         }
 
         public void Dispose()

@@ -5,22 +5,15 @@ namespace DiagToolsValidationRunner.Core.Functionality
     public class SOSDebugger
     {
         private string cliDebugger;
-        private string sosExtension;
         
-        public SOSDebugger(string cliDebugger, string sosExtension)
+        public SOSDebugger(string cliDebugger)
         {
             this.cliDebugger = cliDebugger;
-            this.sosExtension = sosExtension;
         }
 
         public string CLIDebugger
         {
             get { return cliDebugger; }
-        }
-
-        public string SOSExtension
-        {
-            get { return sosExtension; }
         }
 
         public void GenerateDebugScript(string targetRID, string scriptPath, List<string> basicSOSCommandList)
@@ -30,6 +23,8 @@ namespace DiagToolsValidationRunner.Core.Functionality
             List<string> exitCommandList = new();
             if (targetRID.Contains("win"))
             {
+                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
                 preRunCommandList = [
                     ".unload sos",
                     $".load {sosExtension}"
@@ -62,8 +57,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                              string dumpPath,
                                              string debuggerScriptPath,
                                              bool redirectStdOutErr = true,
-                                             List<DataReceivedEventHandler>? outputHandlerList = null,
-                                             List<DataReceivedEventHandler>? errorHandlerList = null)
+                                             bool silent = true)
         {
             string arguments =
                 targetRID.Contains("win") switch
@@ -77,7 +71,12 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                 env,
                                                 workingDirectory))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
 
@@ -87,8 +86,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                         int pid,
                                                         string debuggerScriptPath,
                                                         bool redirectStdOutErr = true,
-                                                        List<DataReceivedEventHandler>? outputHandlerList = null,
-                                                        List<DataReceivedEventHandler>? errorHandlerList = null)
+                                                        bool silent = true)
         {
             string arguments =
                 targetRID.Contains("win") switch
@@ -102,7 +100,12 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                 env,
                                                 workingDirectory))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
 
@@ -112,8 +115,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                    string launchable,
                                                    string debuggerScriptPath,
                                                    bool redirectStdOutErr = true,
-                                                   List<DataReceivedEventHandler>? outputHandlerList = null,
-                                                   List<DataReceivedEventHandler>? errorHandlerList = null)
+                                                   bool silent = true)
         {
             string arguments =
                 targetRID.Contains("win") switch
@@ -127,7 +129,12 @@ namespace DiagToolsValidationRunner.Core.Functionality
                                                 env,
                                                 workingDirectory))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
     }

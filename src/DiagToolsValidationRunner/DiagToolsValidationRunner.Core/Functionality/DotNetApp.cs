@@ -5,11 +5,11 @@ namespace DiagToolsValidationRunner.Core.Functionality
 {
     public class DotNetApp
     {
-        private string appTemplate;
-        private string appRoot;
-        private string appName;
-        private Dictionary<string, string> dotNetEnv;
-        private string dotNetExecutable;
+        public string AppTemplate { get; } = String.Empty;
+        public string AppRoot { get; } = String.Empty;
+        public string AppName { get; } = String.Empty;
+        public Dictionary<string, string> DotNetEnv { get; } = new();
+        private string DotNetExecutable = String.Empty;
 
         public static string GetProjectFilePath(string appRoot, string appName)
         {
@@ -70,26 +70,31 @@ namespace DiagToolsValidationRunner.Core.Functionality
             return excutable;
         }
 
+        public DotNetApp()
+        {
+            // Empty app as placeholder
+        }
+
         public DotNetApp(Dictionary<string, string> dotNetEnv,  string appTemplate, string appRoot, string? appName=null)
         {
-            this.appTemplate = appTemplate;
-            this.appRoot = appRoot;
-            this.dotNetEnv = dotNetEnv;
+            this.AppTemplate = appTemplate;
+            this.AppRoot = appRoot;
+            this.DotNetEnv = dotNetEnv;
 
-            this.dotNetExecutable = DotNetInfrastructure.GetDotNetExecutableFromEnv(dotNetEnv, null);
+            this.DotNetExecutable = DotNetInfrastructure.GetDotNetExecutableFromEnv(dotNetEnv, null);
             if (String.IsNullOrEmpty(appName))
             {
-                this.appName = Path.GetFileName(appRoot);
+                this.AppName = Path.GetFileName(AppRoot);
             }
             else
             {
-                this.appName = appName;
+                this.AppName = appName;
             }
         }
 
         public string GetProjectFilePath()
         {
-            return DotNetApp.GetProjectFilePath(appRoot, appName);
+            return DotNetApp.GetProjectFilePath(AppRoot, AppName);
         }
 
         public string GetTargetFramework()
@@ -101,67 +106,78 @@ namespace DiagToolsValidationRunner.Core.Functionality
         public string GetSymbolFolder(string buildConfig, string targetRID)
         {
             string targetFramework = this.GetTargetFramework();
-            return DotNetApp.GetSymbolFolder(appRoot, targetFramework, buildConfig, targetRID);
+            return DotNetApp.GetSymbolFolder(AppRoot, targetFramework, buildConfig, targetRID);
         }
 
         public string GetNativeSymbolFolder(string buildConfig, string targetRID)
         {
             string targetFramework = this.GetTargetFramework();
-            return DotNetApp.GetNativeSymbolFolder(appRoot, targetFramework, buildConfig, targetRID);
+            return DotNetApp.GetNativeSymbolFolder(AppRoot, targetFramework, buildConfig, targetRID);
         }
 
         public string GetAppExecutable(string buildConfig, string targetRID)
         {
             string symbolFolder = this.GetSymbolFolder(buildConfig, targetRID);
-            return DotNetApp.GetAppExecutable(symbolFolder, appName, targetRID);
+            return DotNetApp.GetAppExecutable(symbolFolder, AppName, targetRID);
         }
 
         public string GetNativeAppExecutable(string buildConfig, string targetRID)
         {
             string nativeSymbolFolder = this.GetSymbolFolder(buildConfig, targetRID);
-            return DotNetApp.GetAppNativeExecutable(nativeSymbolFolder, appName, targetRID);
+            return DotNetApp.GetAppNativeExecutable(nativeSymbolFolder, AppName, targetRID);
         }
 
-        public CommandInvokeResult CreateApp(bool redirectStdOutErr=true,
-                                             List<DataReceivedEventHandler>? outputHandlerList = null,
-                                             List<DataReceivedEventHandler>? errorHandlerList = null)
+        public CommandInvokeResult CreateApp(bool redirectStdOutErr = true, bool silent = false)
         {
-            using (CommandInvoker invoker = new(dotNetExecutable,
-                                                $"new {appTemplate} -o {appRoot} -n {appName}",
-                                                dotNetEnv,
+            using (CommandInvoker invoker = new(DotNetExecutable,
+                                                $"new {AppTemplate} -o {AppRoot} -n {AppName}",
+                                                DotNetEnv,
                                                 ""))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
 
         public CommandInvokeResult BuildApp(string buildConfig,
                                             string targetRID,
                                             bool redirectStdOutErr = true,
-                                            List<DataReceivedEventHandler>? outputHandlerList = null,
-                                            List<DataReceivedEventHandler>? errorHandlerList = null)
+                                            bool silent = false)
         {
-            using (CommandInvoker invoker = new(dotNetExecutable,
+            using (CommandInvoker invoker = new(DotNetExecutable,
                                                 $"build -r {targetRID} -c {buildConfig}",
-                                                dotNetEnv,
-                                                appRoot))
+                                                DotNetEnv,
+                                                AppRoot))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
 
         public CommandInvokeResult PublishApp(string buildConfig,
                                               string targetRID,
                                               bool redirectStdOutErr = true,
-                                              List<DataReceivedEventHandler>? outputHandlerList = null,
-                                              List<DataReceivedEventHandler>? errorHandlerList = null)
+                                              bool silent = false)
         {
-            using (CommandInvoker invoker = new(dotNetExecutable,
+            using (CommandInvoker invoker = new(DotNetExecutable,
                                                 $"publish -r {targetRID} -c {buildConfig}",
-                                                dotNetEnv,
-                                                appRoot))
+                                                DotNetEnv,
+                                                AppRoot))
             {
-                return invoker.InvokeCommand(redirectStdOutErr, outputHandlerList, errorHandlerList);
+                if (!silent)
+                {
+                    invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                    invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+                }
+                return invoker.InvokeCommand(redirectStdOutErr);
             }
         }
     }
