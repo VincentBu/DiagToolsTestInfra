@@ -44,7 +44,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
         {
             string serializedConfiguration = File.ReadAllText(configFile);
             CrossOSDACTestConfiguration baseConfiguration =
-                _deserializer.Deserialize<CrossOSDACTestConfiguration>(configFile);
+                _deserializer.Deserialize<CrossOSDACTestConfiguration>(serializedConfiguration);
 
             if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
             {

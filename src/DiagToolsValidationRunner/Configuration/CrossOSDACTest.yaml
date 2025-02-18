@@ -7,7 +7,7 @@ DotNetDumpSetting:
   # Full version of diagnostics tools.
   Version: 
   # DO NOT CHANGE FEED BEFORE CONFIRMING WITH CLIENT
-  Feed: https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json
+  Feed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
 
 AppSetting:
   BuildConfig: Debug

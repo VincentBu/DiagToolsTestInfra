@@ -2,6 +2,7 @@
 using Spectre.Console.Cli;
 
 using DiagToolsValidationRunner.Commands.DebuggerExtensionTest;
+using DiagToolsValidationRunner.Commands.CrossOSDACTest;
 
 namespace DiagToolsValidationRunner
 {
@@ -16,6 +17,7 @@ namespace DiagToolsValidationRunner
                 {
                     // Run 
                     configuration.AddCommand<DebuggerExtensionTestCommand>("debuggerext-test");
+                    configuration.AddCommand<CrossOSDACTestCommand>("dac-test");
                 });
 
                 app.Run(args);

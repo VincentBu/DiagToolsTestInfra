@@ -31,9 +31,6 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
         {
             RunConfig = runConfig;
             DotNetExecutablePath = DotNetInfrastructure.GetDotNetExecutableFromEnv(RunConfig.SysInfo.EnvironmentVariables);
-            ToolILPath = DotNetTool.GetToolIL(runConfig.DotNetDumpSetting.ToolRoot,
-                                              "dotnet-dump",
-                                              runConfig.DotNetDumpSetting.Version);
 
             OOMDumpPath = Path.Combine(RunConfig.Test.DumpFolder, $"oom-{DotNetInfrastructure.CurrentRID}.dmp");
             UHEDumpPath = Path.Combine(RunConfig.Test.DumpFolder, $"uhe-{DotNetInfrastructure.CurrentRID}.dmp");
@@ -45,6 +42,10 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                                         this.InitializeTest(runConfig,
                                                             baseOOMAppSrcPath,
                                                             baseUHEAppSrcPath));
+            // Must set ToolILPath after initialization
+            ToolILPath = DotNetTool.GetToolIL(runConfig.DotNetDumpSetting.ToolRoot,
+                                              "dotnet-dump",
+                                              runConfig.DotNetDumpSetting.Version);
         }
 
         private IEnumerable<CommandInvokeResult> InitializeTest(CrossOSDACTestRunConfiguration runConfig,
@@ -127,7 +128,14 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
             {
                 return;
             }
+            // Generate dumps
+            string initLoggerPath = Path.Combine(RunConfig.Test.TestResultFolder,
+                                                 $"Initialization-{RunConfig.SDKSetting.Version}.log");
+            CommandInvokeTaskRunner.Run(initLoggerPath,
+                                        this.GenerateDumpsOnLinux(),
+                                        true);
 
+            // Analyze dumps
             DotNetDumpAnalyzer dumpAnalyzer = new(DotNetExecutablePath, ToolILPath);
 
             CommandInvokeResult OOMDumpAnalyzeResult = dumpAnalyzer.DebugDump(RunConfig.SysInfo.EnvironmentVariables,
@@ -177,11 +185,11 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                 string dumpName = Path.GetFileNameWithoutExtension(dumpPath);
                 string symbolFolder = string.Empty;
                 string rid = String.Join("-", dumpName.Split("-").ToList().Slice(1, 2));
-                if (dumpPath.StartsWith("oom"))
+                if (dumpName.StartsWith("oom"))
                 {
                     symbolFolder = RunConfig.AppSetting.OOM.GetSymbolFolder(RunConfig.AppSetting.BuildConfig, rid);
                 }
-                else if (dumpPath.StartsWith("uhe"))
+                else if (dumpName.StartsWith("uhe"))
                 {
                     symbolFolder = RunConfig.AppSetting.UHE.GetSymbolFolder(RunConfig.AppSetting.BuildConfig, rid);
                 }

@@ -34,7 +34,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTngTest
         {
             string serializedConfiguration = File.ReadAllText(configFile);
             LTTngTestConfiguration baseConfiguration =
-                _deserializer.Deserialize<LTTngTestConfiguration>(configFile);
+                _deserializer.Deserialize<LTTngTestConfiguration>(serializedConfiguration);
 
             if (string.IsNullOrEmpty(baseConfiguration.Test.TestBed))
             {

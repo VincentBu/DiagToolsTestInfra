@@ -15,7 +15,7 @@ namespace DiagToolsValidationRunner.Commands.CrossOSDACTest
         Command<CrossOSDACTestCommand.CrossOSDACTestSettings>
     {
         private readonly string _baseOOMAppSrcPath =
-            Path.Combine("Commands", "CrossOSDACTest", "TargesAppsSrc", "oom", "Program.cs.txt");
+            Path.Combine("Commands", "CrossOSDACTest", "TargetAppsSrc", "oom", "Program.cs.txt");
 
         private readonly string _baseUHEAppSrcPath =
             Path.Combine("Commands", "CrossOSDACTest", "TargetAppsSrc", "uhe", "Program.cs.txt");

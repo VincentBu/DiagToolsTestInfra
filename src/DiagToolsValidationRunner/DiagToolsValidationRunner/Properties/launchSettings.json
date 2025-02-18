@@ -2,7 +2,7 @@
   "profiles": {
     "DiagToolsValidationRunner": {
       "commandName": "Project",
-      "commandLineArgs": "debuggerext-test -c \"C:\\Workspace\\DiagTool\\TestOutput\\DebuggerExt\\DebuggerExtensionTest.yaml\""
+      "commandLineArgs": "dac-test -c C:\\Workspace\\DiagTool\\TestOutput\\DAC\\CrossOSDACTest.yaml"
     }
   }
 }

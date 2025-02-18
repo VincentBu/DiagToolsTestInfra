@@ -49,7 +49,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.DiagnosticsTest
         {
             string serializedConfiguration = File.ReadAllText(configFile);
             DiagToolsTestRunConfiguration configuration =
-                _deserializer.Deserialize<DiagToolsTestRunConfiguration>(configFile);
+                _deserializer.Deserialize<DiagToolsTestRunConfiguration>(serializedConfiguration);
 
             if (string.IsNullOrEmpty(configuration.SDKSetting.Version))
             {
