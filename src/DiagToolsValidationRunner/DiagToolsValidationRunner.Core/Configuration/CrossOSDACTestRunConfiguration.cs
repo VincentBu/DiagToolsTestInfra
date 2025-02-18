@@ -8,14 +8,14 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
 {
     public class TargetAppSetting : BaseTargetAppSetting
     {
-        public DotNetApp? OOM;
-        public DotNetApp? UHE;
+        public DotNetApp OOM = new();
+        public DotNetApp UHE = new();
     }
 
     public class TestSetting : BaseTestSetting
     {
-        public string? DumpFolder;
-        public string? AnalysisOutputFolder;
+        public string DumpFolder = String.Empty;
+        public string AnalysisOutputFolder = String.Empty;
     }
 
     public class CrossOSDACTestRunConfiguration
@@ -33,7 +33,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
         public required List<string> SDKVersionList;
         public required DotNetToolSetting DotNetDumpSetting;
         public required TargetAppSetting AppSetting;
-        public List<CrossOSDACTestRunConfiguration>? CrossOSDACTestRunConfigurationList;
+        public List<CrossOSDACTestRunConfiguration> CrossOSDACTestRunConfigurationList = new();
     }
 
     public static class CrossOSDACTestConfigurationGenerator
@@ -79,69 +79,146 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
             return baseConfiguration;
         }
 
+        private static CrossOSDACTestRunConfiguration CreateRunConfig(string testbed,
+                                                                      string testResultFolder,
+                                                                      string testName,
+                                                                      string dumpFolder,
+                                                                      string analysisOutputFolder,
+                                                                      string dotNetDumpVersion,
+                                                                      string dotNetDumpFeed,
+                                                                      string dotNetDumpRoot,
+                                                                      string SDKVersion,
+                                                                      string dotNetRoot,
+                                                                      Dictionary<string, string> env,
+                                                                      string buildConfig,
+                                                                      string oomAppRoot,
+                                                                      string uheAppRoot)
+        {
+            return new()
+            {
+                Test = new()
+                {
+                    TestBed = testbed,
+                    TestResultFolder = testResultFolder,
+                    TestName = testName,
+                    DumpFolder = dumpFolder,
+                    AnalysisOutputFolder = analysisOutputFolder
+                },
+                DotNetDumpSetting = new()
+                {
+                    Version = dotNetDumpVersion,
+                    Feed = dotNetDumpFeed,
+                    ToolRoot = dotNetDumpRoot
+                },
+                SDKSetting = new()
+                {
+                    Version = SDKVersion,
+                    DotNetRoot = dotNetRoot,
+                },
+                SysInfo = new()
+                {
+                    EnvironmentVariables = new(env)
+                },
+                AppSetting = new()
+                {
+                    BuildConfig = buildConfig,
+                    OOM = new(env, "console", oomAppRoot),
+                    UHE = new(env, "console", uheAppRoot)
+                }
+            };
+        }
+
         public static CrossOSDACTestConfiguration GenerateConfiguration(string configFile)
         {
             CrossOSDACTestConfiguration configuration = ParseConfigFile(configFile);
             string testResultFolder = Path.Combine(configuration.Test.TestBed, "TestResult");
 
+
             configuration.CrossOSDACTestRunConfigurationList = new();
             foreach (string SDKVersion in configuration.SDKVersionList)
             {
-                string testName = $"CrossOSDAC-SDK{SDKVersion}";
-                string dumpFolder = Path.Combine(testResultFolder, $"dumps-sdk{SDKVersion}");
-                string analysisOutputFolder = Path.Combine(testResultFolder, $"analysis-sdk{SDKVersion}");
-
-                string dotNetRoot = Path.Combine(configuration.Test.TestBed, $"DotNetSDK-{SDKVersion}");
-
-                string dotNetDumpVersion = configuration.DotNetDumpSetting.Version;
-                string dotNetDumpFeed = configuration.DotNetDumpSetting.Feed;
-                string dotNetDumpRoot = Path.Combine(configuration.Test.TestBed, $"dotnet-dump-{SDKVersion}");
-
-                Dictionary<string, string> env = new();
-                foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+                if (OperatingSystem.IsWindows())
                 {
-                    env[de!.Key!.ToString()!] = de!.Value!.ToString()!;
-                }
-                env["DOTNET_ROOT"] = dotNetRoot;
+                    List<string> winRIDList = new() { "win-x86", "win-x64" };
+                    foreach (var rid in winRIDList)
+                    {
+                        string testName = $"CrossOSDAC-SDK{SDKVersion}-{rid}";
+                        string dumpFolder = Path.Combine(testResultFolder, $"dumps-sdk{SDKVersion}");
+                        string analysisOutputFolder = Path.Combine(testResultFolder, $"analysis-sdk{SDKVersion}");
 
-                string targetAppsRoot = Path.Combine(testResultFolder, "TargetApps");
-                string oomAppRoot = Path.Combine(targetAppsRoot, $"oom-sdk{SDKVersion}");
-                string uheAppRoot = Path.Combine(targetAppsRoot, $"uhe-sdk{SDKVersion}");
+                        string dotNetRoot = Path.Combine(configuration.Test.TestBed, $"DotNetSDK-{SDKVersion}-{rid}");
 
-                CrossOSDACTestRunConfiguration runConfig = new()
-                {
-                    Test = new()
-                    {
-                        TestBed = configuration.Test.TestBed,
-                        TestResultFolder = testResultFolder,
-                        TestName = testName,
-                        DumpFolder = dumpFolder,
-                        AnalysisOutputFolder = analysisOutputFolder
-                    },
-                    DotNetDumpSetting = new()
-                    {
-                        Version = dotNetDumpVersion,
-                        Feed = dotNetDumpFeed,
-                        ToolRoot = dotNetDumpRoot
-                    },
-                    SDKSetting = new()
-                    {
-                        Version = SDKVersion,
-                        DotNetRoot = dotNetRoot,
-                    },
-                    SysInfo = new()
-                    {
-                        EnvironmentVariables = new(env)
-                    },
-                    AppSetting = new()
-                    {
-                        BuildConfig = configuration.AppSetting.BuildConfig,
-                        OOM = new(env, "console", oomAppRoot),
-                        UHE = new(env, "console", uheAppRoot)
+                        string dotNetDumpRoot = Path.Combine(configuration.Test.TestBed, $"dotnet-dump-{SDKVersion}-{rid}");
+
+                        Dictionary<string, string> env = new();
+                        foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+                        {
+                            env[de!.Key!.ToString()!] = de!.Value!.ToString()!;
+                        }
+                        env["DOTNET_ROOT"] = dotNetRoot;
+
+                        string targetAppsRoot = Path.Combine(testResultFolder, "TargetApps");
+                        string oomAppRoot = Path.Combine(targetAppsRoot, $"oom-sdk{SDKVersion}");
+                        string uheAppRoot = Path.Combine(targetAppsRoot, $"uhe-sdk{SDKVersion}");
+
+                        CrossOSDACTestRunConfiguration runConfig = CreateRunConfig(configuration.Test.TestBed,
+                                                                                   testResultFolder,
+                                                                                   testName,
+                                                                                   dumpFolder,
+                                                                                   analysisOutputFolder,
+                                                                                   configuration.DotNetDumpSetting.Version,
+                                                                                   configuration.DotNetDumpSetting.Feed,
+                                                                                   dotNetDumpRoot,
+                                                                                   SDKVersion,
+                                                                                   dotNetRoot,
+                                                                                   env,
+                                                                                   configuration.AppSetting.BuildConfig,
+                                                                                   oomAppRoot,
+                                                                                   uheAppRoot);
+
+                        configuration.CrossOSDACTestRunConfigurationList.Add(runConfig);
                     }
-                };
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                    string testName = $"CrossOSDAC-SDK{SDKVersion}";
+                    string dumpFolder = Path.Combine(testResultFolder, $"dumps-sdk{SDKVersion}");
+                    string analysisOutputFolder = Path.Combine(testResultFolder, $"analysis-sdk{SDKVersion}");
+                    string dotNetRoot = Path.Combine(configuration.Test.TestBed, $"DotNetSDK-{SDKVersion}");
+                    string dotNetDumpRoot = Path.Combine(configuration.Test.TestBed, $"dotnet-dump-{SDKVersion}");
 
-                configuration.CrossOSDACTestRunConfigurationList.Add(runConfig);
+                    Dictionary<string, string> env = new();
+                    foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+                    {
+                        env[de!.Key!.ToString()!] = de!.Value!.ToString()!;
+                    }
+                    env["DOTNET_ROOT"] = dotNetRoot;
+
+                    string targetAppsRoot = Path.Combine(testResultFolder, "TargetApps");
+                    string oomAppRoot = Path.Combine(targetAppsRoot, $"oom-sdk{SDKVersion}");
+                    string uheAppRoot = Path.Combine(targetAppsRoot, $"uhe-sdk{SDKVersion}");
+
+                    CrossOSDACTestRunConfiguration runConfig = CreateRunConfig(configuration.Test.TestBed,
+                                                                               testResultFolder,
+                                                                               testName,
+                                                                               dumpFolder,
+                                                                               analysisOutputFolder,
+                                                                               configuration.DotNetDumpSetting.Version,
+                                                                               configuration.DotNetDumpSetting.Feed,
+                                                                               dotNetDumpRoot,
+                                                                               SDKVersion,
+                                                                               dotNetRoot,
+                                                                               env,
+                                                                               configuration.AppSetting.BuildConfig,
+                                                                               oomAppRoot,
+                                                                               uheAppRoot);
+
+                    configuration.CrossOSDACTestRunConfigurationList.Add(runConfig);
+                }
+                else
+                {
+                    throw new Exception($"{nameof(CrossOSDACTestConfigurationGenerator)}: Unsupported OS");
+                }
             }
 
             return configuration;

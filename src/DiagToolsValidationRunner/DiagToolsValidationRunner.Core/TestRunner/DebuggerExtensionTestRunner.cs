@@ -50,8 +50,7 @@ $"""
             RunConfig = runConfig;
             string initLoggerPath = Path.Combine(runConfig.Test.TestResultFolder,
                                                     $"Initialization-{runConfig.SDKSetting.Version}.log");
-            CommandInvokeTaskRunner runner = new(initLoggerPath);
-            runner.Run(this.InitializeTest(runConfig, baseNativeAOTAppSrcPath));
+            CommandInvokeTaskRunner.Run(initLoggerPath, this.InitializeTest(runConfig, baseNativeAOTAppSrcPath));
         }
 
         private IEnumerable<CommandInvokeResult> InitializeTest(DebuggerExtensionTestRunConfiguration runConfig,
@@ -62,8 +61,8 @@ $"""
             Directory.CreateDirectory(runConfig.Test.LiveSessionDebuggingOutputFolder);
 
             // Generate environment activation script
-            string scriptPath = Path.Combine(RunConfig.Test.TestBed,
-                                             $"env_activation-sdk{RunConfig.SDKSetting.Version}");
+            string scriptPath = Path.Combine(runConfig.Test.TestBed,
+                                             $"env_activation-sdk{runConfig.SDKSetting.Version}");
             DotNetInfrastructure.GenerateEnvironmentActivationScript(DotNetInfrastructure.CurrentRID,
                                                                      scriptPath,
                                                                      runConfig.SDKSetting.DotNetRoot,
@@ -192,7 +191,7 @@ $"""
                 false => Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, $"nativeaot-dump.dmp")
             };
 
-            SOSDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
+            CLIDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
             yield return debugger.DebugDump(env,
                                             DotNetInfrastructure.CurrentRID,
                                             RunConfig.Test.DumpDebuggingOutputFolder,
@@ -255,7 +254,7 @@ $"""
             string nativeaotExecutablePath = RunConfig.AppSetting.NativeAOTApp.GetNativeAppExecutable(RunConfig.AppSetting.BuildConfig,
                                                                                                       DotNetInfrastructure.CurrentRID);
 
-            SOSDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
+            CLIDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
             yield return debugger.DebugLaunchable(env,
                                                   DotNetInfrastructure.CurrentRID,
                                                   RunConfig.Test.LiveSessionDebuggingOutputFolder,
@@ -268,14 +267,12 @@ $"""
             string testDumpDebuggingLogPath = Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder,
                                                            "debug-dump.log");
             // Ignore error since running nativeaot can raise exception which is expected.
-            CommandInvokeTaskRunner dumpDebuggingTaskRunner = new(testDumpDebuggingLogPath, true);
-            dumpDebuggingTaskRunner.Run(TestByDebuggingDump());
+            CommandInvokeTaskRunner.Run(testDumpDebuggingLogPath, TestByDebuggingDump(), true);
 
             string testProcessDebuggingLogPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder,
                                                               "debug-process.log");
             // Ignore error since running nativeaot can raise exception which is expected.
-            CommandInvokeTaskRunner processDebuggingTaskRunner = new(testProcessDebuggingLogPath, true);
-            processDebuggingTaskRunner.Run(TestByDebuggingProcess());
+            CommandInvokeTaskRunner.Run(testProcessDebuggingLogPath, TestByDebuggingProcess(), true);
         }
     }
 }

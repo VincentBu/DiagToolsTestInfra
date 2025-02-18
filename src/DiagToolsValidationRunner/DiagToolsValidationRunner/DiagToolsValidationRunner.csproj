@@ -16,7 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Commands\DebuggerExtensionTest\TargesAppsSrc\nativeaot\Program.cs.txt">
+    <None Update="Commands\CrossOSDACTest\TargetAppsSrc\oom\Program.cs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Commands\CrossOSDACTest\TargetAppsSrc\uhe\Program.cs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Commands\DebuggerExtensionTest\TargetAppsSrc\nativeaot\Program.cs.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

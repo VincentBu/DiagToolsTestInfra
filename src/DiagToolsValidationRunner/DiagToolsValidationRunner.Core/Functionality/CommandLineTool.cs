@@ -21,18 +21,11 @@ namespace DiagToolsValidationRunner.Core.Functionality
         }
     }
 
-    public class CommandInvokeTaskRunner
+    public static class CommandInvokeTaskRunner
     {
-        public string LoggerPath { get; set; } = string.Empty;
-        private bool IgnoreError = false;
-
-        public CommandInvokeTaskRunner(string loggerPath, bool ignoreError = false)
-        {
-            LoggerPath = loggerPath;
-            IgnoreError = ignoreError;
-        }
-
-        public void Run(IEnumerable<CommandInvokeResult> commandInvokeTask)
+        public static void Run(string loggerPath,
+                               IEnumerable<CommandInvokeResult> commandInvokeTask,
+                               bool ignoreError = false)
         {
             IEnumerator<CommandInvokeResult> enumrator = commandInvokeTask.GetEnumerator();
             while (true)
@@ -56,13 +49,13 @@ namespace DiagToolsValidationRunner.Core.Functionality
                         logContent.AppendLine($"Inner Exception:\n:{result.Exn.InnerException}");
                     }
                     logContent.AppendLine("\n");
-                    File.AppendAllText(LoggerPath, logContent.ToString());
+                    File.AppendAllText(loggerPath, logContent.ToString());
 
                     if (!String.IsNullOrEmpty(result.StandardError) || result.Exn != null)
                     {
-                        if (!IgnoreError)
+                        if (!ignoreError)
                         {
-                            Console.WriteLine($"Run Command {result.Command} but get error! See {LoggerPath} for details.");
+                            Console.WriteLine($"Run Command {result.Command} but get error! See {loggerPath} for details.");
                             break;
                         }
                     }
@@ -73,10 +66,26 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     logContent.AppendLine($"Run into error: {ex.Message}");
                     logContent.AppendLine($"Stack Trace:\n{ex.StackTrace}");
                     logContent.AppendLine($"Inner Exception:\n{ex.InnerException}");
-                    File.AppendAllText(LoggerPath, logContent.ToString());
+                    File.AppendAllText(loggerPath, logContent.ToString());
                     break;
                 }
             }
+        }
+
+        public static void RecordSingle(string loggerPath, CommandInvokeResult result)
+        {
+            StringBuilder logContent = new();
+            logContent.AppendLine($"Run Command: {result.Command}");
+            logContent.AppendLine(result.StandardOutput);
+            logContent.AppendLine(result.StandardError);
+            if (result.Exn != null)
+            {
+                logContent.AppendLine($"Error Message:{result.Exn.Message}");
+                logContent.AppendLine($"Stack Trace:\n{result.Exn.StackTrace}");
+                logContent.AppendLine($"Inner Exception:\n:{result.Exn.InnerException}");
+            }
+            logContent.AppendLine("\n");
+            File.AppendAllText(loggerPath, logContent.ToString());
         }
     }
 
@@ -97,12 +106,12 @@ namespace DiagToolsValidationRunner.Core.Functionality
 
         public readonly string Command;
 
-        public string CommandStandardOutput
+        public string StandardOutput
         {
             get { return stdout.ToString(); }
         }
 
-        public string CommandStandardError
+        public string StandardError
         {
             get { return stderr.ToString(); }
         }

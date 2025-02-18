@@ -1,12 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System.Security.Principal;
+using System.ComponentModel;
 
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 using DiagToolsValidationRunner.Core.Configuration.DebuggerExtensionTest;
 using DiagToolsValidationRunner.Core.TestRunner.DebuggerExtensionTest;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
-using Spectre.Console;
 
 namespace DiagToolsValidationRunner.Commands.DebuggerExtensionTest
 {

@@ -1,19 +1,12 @@
-﻿using System.Diagnostics;
-
-namespace DiagToolsValidationRunner.Core.Functionality
+﻿namespace DiagToolsValidationRunner.Core.Functionality
 {
-    public class SOSDebugger
+    public class CLIDebugger
     {
-        private string cliDebugger;
+        public string CLIDebuggerPath { get; }
         
-        public SOSDebugger(string cliDebugger)
+        public CLIDebugger(string cliDebuggerPath)
         {
-            this.cliDebugger = cliDebugger;
-        }
-
-        public string CLIDebugger
-        {
-            get { return cliDebugger; }
+            this.CLIDebuggerPath = cliDebuggerPath;
         }
 
         public CommandInvokeResult DebugDump(Dictionary<string, string> env,
@@ -31,7 +24,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     false => $"-c {dumpPath} -s {debuggerScriptPath} --batch"
                 };
 
-            CommandInvoker invoker = new(cliDebugger,
+            CommandInvoker invoker = new(CLIDebuggerPath,
                                          arguments,
                                          env,
                                          workingDirectory);
@@ -59,7 +52,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     false => $"-s {debuggerScriptPath} -p {pid}  --batch"
                 };
 
-            CommandInvoker invoker = new(cliDebugger,
+            CommandInvoker invoker = new(CLIDebuggerPath,
                                          arguments,
                                          env,
                                          workingDirectory);
@@ -86,7 +79,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     false => $"-s {debuggerScriptPath} --batch {launchable}"
                 };
 
-            CommandInvoker invoker = new(cliDebugger,
+            CommandInvoker invoker = new(CLIDebuggerPath,
                                          arguments,
                                          env,
                                          workingDirectory);
@@ -96,6 +89,46 @@ namespace DiagToolsValidationRunner.Core.Functionality
                 invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
             }
             return invoker.InvokeCommand(redirectStdOutErr);
+        }
+    }
+
+    public class DotNetDumpAnalyzer
+    {
+        private string DotNetExecutablePath { get; }
+        public string DotNetDumpILPath { get; }
+
+        public DotNetDumpAnalyzer(string dotNetExecutablePath, string dotNetDumpILPath)
+        {
+            this.DotNetExecutablePath = dotNetExecutablePath;
+            this.DotNetDumpILPath = dotNetDumpILPath;
+        }
+
+        public CommandInvokeResult DebugDump(Dictionary<string, string> env,
+                                             string workingDirectory,
+                                             string dumpPath,
+                                             List<string> sosCommandList,
+                                             bool redirectStdOutErr = true,
+                                             bool silent = true)
+        {
+            CommandInvoker invoker = new(DotNetExecutablePath,
+                                         $"{DotNetDumpILPath} analyze {dumpPath}",
+                                         env,
+                                         workingDirectory);
+            if (!silent)
+            {
+                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
+                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
+            }
+            invoker.InvokeCommandWithOutWaitingForExit(redirectStdOutErr);
+            int pid = invoker.InvokedProcess.Id;
+            foreach (var command in sosCommandList)
+            {
+                invoker.InvokedProcess.StandardInput.WriteLine(command);
+            }
+
+            invoker.InvokedProcess.StandardInput.WriteLine("exit");
+            invoker.InvokedProcess.WaitForExit();
+            return new(invoker.Command, invoker.StandardOutput, invoker.StandardError, pid);
         }
     }
 }
