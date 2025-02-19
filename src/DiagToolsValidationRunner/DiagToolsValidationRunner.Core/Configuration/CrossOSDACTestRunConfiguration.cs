@@ -181,7 +181,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest
                 }
                 else if (OperatingSystem.IsLinux())
                 {
-                    string testName = $"CrossOSDAC-SDK{SDKVersion}";
+                    string testName = $"CrossOSDAC-SDK{SDKVersion}-{DotNetInfrastructure.CurrentRID}";
                     string dumpFolder = Path.Combine(testResultFolder, $"dumps-sdk{SDKVersion}");
                     string analysisOutputFolder = Path.Combine(testResultFolder, $"analysis-sdk{SDKVersion}");
                     string dotNetRoot = Path.Combine(configuration.Test.TestBed, $"DotNetSDK-{SDKVersion}");

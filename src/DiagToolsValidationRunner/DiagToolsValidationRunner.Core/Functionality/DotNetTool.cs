@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace DiagToolsValidationRunner.Core.Functionality
+﻿namespace DiagToolsValidationRunner.Core.Functionality
 {
     public static class DotNetTool
     {
@@ -38,19 +36,8 @@ namespace DiagToolsValidationRunner.Core.Functionality
                     _ => $"tool install {toolName} --tool-path {toolRoot} --version {toolVersion} --add-source {toolFeed} --configfile {configFilePath}"
                 };
 
-            CommandInvoker invoker = new(dotNetExecutable, argument, dotNetEnv, "");
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
-        }
-
-        public static async Task DownloadPerfcollect(string perfcollectPath)
-        {
-            string perfcollectUrl = "https://raw.githubusercontent.com/microsoft/perfview/main/src/perfcollect/perfcollect";
-            await Utilities.Download(perfcollectUrl, perfcollectPath);
+            CommandInvoker invoker = new(dotNetExecutable, argument, dotNetEnv, "", redirectStdOutErr, silent);
+            return invoker.WaitForResult();
         }
     }
 }

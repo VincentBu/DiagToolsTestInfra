@@ -183,5 +183,11 @@ namespace DiagToolsValidationRunner.Core.Functionality
             env["DOTNET_StressLogLevel"] = "10";
             env["DOTNET_TotalStressLogSize"] = "8196";
         }
+
+        public static void ActiveTracingEnvironment(Dictionary<string, string> env)
+        {
+            env["DOTNET_PerfMapEnabled"] = "1";
+            env["DOTNET_EnableEventLog"] = "1";
+        }
     }
 }

@@ -25,6 +25,13 @@
     <None Update="Commands\DebuggerExtensionTest\TargetAppsSrc\nativeaot\Program.cs.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Commands\LTTngTest\TargetAppsSrc\gcperfsim\Program.cs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\LTTngTest\TargetAppsSrc\gcperfsim\" />
   </ItemGroup>
 
 </Project>

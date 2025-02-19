@@ -27,14 +27,10 @@
             CommandInvoker invoker = new(CLIDebuggerPath,
                                          arguments,
                                          env,
-                                         workingDirectory);
-            
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
+                                         workingDirectory,
+                                         redirectStdOutErr,
+                                         silent);
+            return invoker.WaitForResult();
         }
 
         public CommandInvokeResult DebugAttachedProcess(Dictionary<string, string> env,
@@ -55,13 +51,10 @@
             CommandInvoker invoker = new(CLIDebuggerPath,
                                          arguments,
                                          env,
-                                         workingDirectory);
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
+                                         workingDirectory,
+                                         redirectStdOutErr,
+                                         silent);
+            return invoker.WaitForResult();
         }
 
         public CommandInvokeResult DebugLaunchable(Dictionary<string, string> env,
@@ -82,13 +75,10 @@
             CommandInvoker invoker = new(CLIDebuggerPath,
                                          arguments,
                                          env,
-                                         workingDirectory);
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
+                                         workingDirectory,
+                                         redirectStdOutErr,
+                                         silent);
+            return invoker.WaitForResult();
         }
     }
 
@@ -113,22 +103,16 @@
             CommandInvoker invoker = new(DotNetExecutablePath,
                                          $"{DotNetDumpILPath} analyze {dumpPath}",
                                          env,
-                                         workingDirectory);
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            invoker.InvokeCommandWithOutWaitingForExit(redirectStdOutErr);
-            int pid = invoker.InvokedProcess.Id;
+                                         workingDirectory,
+                                         redirectStdOutErr,
+                                         silent);
             foreach (var command in sosCommandList)
             {
-                invoker.InvokedProcess.StandardInput.WriteLine(command);
+                invoker.StandardInput.WriteLine(command);
             }
 
-            invoker.InvokedProcess.StandardInput.WriteLine("exit");
-            invoker.InvokedProcess.WaitForExit();
-            return new(invoker.Command, invoker.StandardOutput, invoker.StandardError, pid);
+            invoker.StandardInput.WriteLine("exit");
+            return invoker.WaitForResult();
         }
     }
 }

@@ -7,7 +7,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTngTest
 {
     public class TargetAppSetting : BaseTargetAppSetting
     {
-        public DotNetApp? GCPerfsim;
+        public DotNetApp GCPerfsim = new();
     }
 
     public class LTTngTestRunConfiguration
@@ -23,7 +23,7 @@ namespace DiagToolsValidationRunner.Core.Configuration.LTTngTest
         public required BaseTestSetting Test;
         public required List<string> SDKVersionList;
         public required TargetAppSetting AppSetting;
-        public List<LTTngTestRunConfiguration>? LTTngRunConfigurationList;
+        public List<LTTngTestRunConfiguration> LTTngRunConfigurationList = new();
     }
 
     public static class LTTngTestConfigurationGenerator

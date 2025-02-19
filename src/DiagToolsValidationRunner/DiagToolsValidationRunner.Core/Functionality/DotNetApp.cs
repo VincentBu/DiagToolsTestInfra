@@ -132,13 +132,10 @@ namespace DiagToolsValidationRunner.Core.Functionality
             CommandInvoker invoker = new(DotNetExecutable,
                                          $"new {AppTemplate} -o {AppRoot} -n {AppName} --force",
                                          DotNetEnv,
-                                         "");
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
+                                         "",
+                                         redirectStdOutErr,
+                                         silent);
+            return invoker.WaitForResult();
         }
 
         public CommandInvokeResult BuildApp(string buildConfig,
@@ -149,14 +146,10 @@ namespace DiagToolsValidationRunner.Core.Functionality
             CommandInvoker invoker = new(DotNetExecutable,
                                          $"build -r {targetRID} -c {buildConfig}",
                                          DotNetEnv,
-                                         AppRoot);
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
-            
+                                         AppRoot,
+                                         redirectStdOutErr,
+                                         silent);
+            return invoker.WaitForResult();
         }
 
         public CommandInvokeResult PublishApp(string buildConfig,
@@ -167,13 +160,10 @@ namespace DiagToolsValidationRunner.Core.Functionality
             CommandInvoker invoker = new(DotNetExecutable,
                                          $"publish -r {targetRID} -c {buildConfig}",
                                          DotNetEnv,
-                                         AppRoot);
-            if (!silent)
-            {
-                invoker.InvokedProcess.OutputDataReceived += CommandInvoker.PrintReceivedData;
-                invoker.InvokedProcess.ErrorDataReceived += CommandInvoker.PrintReceivedData;
-            }
-            return invoker.InvokeCommand(redirectStdOutErr);
+                                         AppRoot,
+                                         redirectStdOutErr,
+                                         silent);
+            return invoker.WaitForResult();
         }
     }
 }

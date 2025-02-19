@@ -123,7 +123,7 @@ $"""
             CommandInvoker extensionInstallInvoker = new(dotNetExecutable,
                                                          $"{toolILPath} install --accept-license-agreement",
                                                          RunConfig.SysInfo.EnvironmentVariables);
-            yield return extensionInstallInvoker.InvokeCommand(true);
+            yield return extensionInstallInvoker.WaitForResult();
         }
 
         private IEnumerable<CommandInvokeResult> TestByDebuggingDump()
@@ -184,7 +184,7 @@ $"""
                                                                                                       DotNetInfrastructure.CurrentRID);
 
             CommandInvoker nativeaotRunInvoker = new(nativeaotExecutablePath, "", env);
-            yield return nativeaotRunInvoker.InvokeCommand(true);
+            yield return nativeaotRunInvoker.WaitForResult();
             string dumpPath = DotNetInfrastructure.CurrentRID.Contains("win") switch
             {
                 true => Directory.GetFiles(RunConfig.Test.DumpDebuggingOutputFolder, "*.dmp").FirstOrDefault(""),

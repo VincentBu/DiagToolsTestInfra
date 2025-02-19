@@ -89,7 +89,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
         }
     }
 
-    public class CommandInvoker: IDisposable
+    public class CommandInvoker: Process
     {
         public static void PrintReceivedData(object sender, DataReceivedEventArgs args)
         {
@@ -99,57 +99,61 @@ namespace DiagToolsValidationRunner.Core.Functionality
                 Console.WriteLine($"    {content}");
             }
         }
-        
+
+        private bool IsInvoked = false;
         private StringBuilder stdout;
         private StringBuilder stderr;
-        private Process proc;
 
         public readonly string Command;
+        public readonly int ProcessID;
+        public readonly Exception? Exn;
 
-        public string StandardOutput
+        public string ConsoleOutput
         {
             get { return stdout.ToString(); }
         }
 
-        public string StandardError
+        public string ConsoleError
         {
             get { return stderr.ToString(); }
-        }
-
-        public Process InvokedProcess
-        {
-            get { return proc; }
         }
 
         public CommandInvoker(string fileName,
                               string argument,
                               Dictionary<string, string> env,
-                              string workDirectory = "")
+                              string workDirectory = "",
+                              bool redirectStdOutErr = true,
+                              bool silent = false) : base()
         {
+            
             // Initialize
             stdout = new();
             stderr = new();
             Command = $"{fileName} {argument}";
-            proc = new();
-            proc.StartInfo.FileName = fileName;
-            proc.StartInfo.Arguments = argument;
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardInput = true;
-            proc.StartInfo.WorkingDirectory = workDirectory;
 
-            proc.StartInfo.EnvironmentVariables.Clear();
-            proc.StartInfo.EnvironmentVariables["Path"] = Environment.GetEnvironmentVariable("Path");
+            this.StartInfo.FileName = fileName;
+            this.StartInfo.Arguments = argument;
+            this.StartInfo.UseShellExecute = false;
+            this.StartInfo.RedirectStandardInput = true;
+            this.StartInfo.WorkingDirectory = workDirectory;
+            this.StartInfo.CreateNoWindow = true;
+
+            this.StartInfo.EnvironmentVariables.Clear();
+            this.StartInfo.EnvironmentVariables["Path"] = Environment.GetEnvironmentVariable("Path");
             foreach (var key in env.Keys)
             {
-                proc.StartInfo.EnvironmentVariables[key] = env[key];
+                this.StartInfo.EnvironmentVariables[key] = env[key];
             }
-        }
 
-        public void InvokeCommandWithOutWaitingForExit(bool redirectStdOutErr = true)
-        {
+            if (IsInvoked)
+            {
+                throw new Exception($"{nameof(CommandInvoker)}: Command \"{Command}\" has been invoked");
+            }
+
+            IsInvoked = true;
             if (redirectStdOutErr)
             {
-                proc.OutputDataReceived += (sender, args) =>
+                this.OutputDataReceived += (sender, args) =>
                 {
                     string? line = args.Data;
                     if (!String.IsNullOrEmpty(line))
@@ -157,7 +161,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
                         stdout.AppendLine(line);
                     }
                 };
-                proc.ErrorDataReceived += (sender, args) =>
+                this.ErrorDataReceived += (sender, args) =>
                 {
                     string? line = args.Data;
                     if (!String.IsNullOrEmpty(line))
@@ -167,37 +171,59 @@ namespace DiagToolsValidationRunner.Core.Functionality
                 };
             }
 
-            proc.StartInfo.RedirectStandardOutput = redirectStdOutErr;
-            proc.StartInfo.RedirectStandardError = redirectStdOutErr;
+            if (!silent)
+            {
+
+                this.OutputDataReceived += PrintReceivedData;
+                this.ErrorDataReceived += PrintReceivedData;
+            }
+
+            this.StartInfo.RedirectStandardOutput = redirectStdOutErr;
+            this.StartInfo.RedirectStandardError = redirectStdOutErr;
 
             Console.WriteLine($"\nRun command: {Command}");
-            proc.Start();
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
-        }
 
-        public CommandInvokeResult InvokeCommand(bool redirectStdOutErr)
-        {
             try
             {
-                InvokeCommandWithOutWaitingForExit(redirectStdOutErr);
-
-                int pid = proc.Id;
-                proc.WaitForExit();
-                proc.Dispose();
-                return new(Command, stdout.ToString(), stderr.ToString(), pid);
+                this.Start();
+                ProcessID = this.Id;
+                if (redirectStdOutErr)
+                {
+                    this.BeginOutputReadLine();
+                    this.BeginErrorReadLine();
+                }
             }
             catch (Exception ex)
             {
-                return new(Command, stdout.ToString(), stderr.ToString(), -1, ex);
+                Exn = ex;
             }
         }
 
-        public void Dispose()
+        public CommandInvokeResult WaitForResult()
         {
-            proc.Kill(true);
-            proc.WaitForExit();
-            proc.Dispose();
+            try
+            {
+                this.WaitForExit();
+                return new(Command, ConsoleOutput, stderr.ToString(), ProcessID);
+            }
+            catch (Exception ex)
+            {
+                return new(Command, ConsoleOutput, stderr.ToString(), -1, ex);
+            }
+        }
+
+        public CommandInvokeResult TerminateForResult()
+        {
+            try
+            {
+                this.Kill(true);
+                this.WaitForExit();
+                return new(Command, ConsoleOutput, stderr.ToString(), ProcessID);
+            }
+            catch (Exception ex)
+            {
+                return new(Command, ConsoleOutput, stderr.ToString(), -1, ex);
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using DiagToolsValidationRunner.Core.Configuration.CrossOSDACTest;
 using DiagToolsValidationRunner.Core.Functionality;
-using System.Xml.Linq;
 
 namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
 {
@@ -111,7 +110,7 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                                                                                        DotNetInfrastructure.CurrentRID);
 
             CommandInvoker OOMRunInvoker = new(oomExecutablePath, "", env);
-            yield return OOMRunInvoker.InvokeCommand(true);
+            yield return OOMRunInvoker.WaitForResult();
 
             // Run UHE and generate dump
             DotNetInfrastructure.ActiveDotNetDumpGeneratingEnvironment(env, UHEDumpPath);
@@ -119,7 +118,7 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                                                                                        DotNetInfrastructure.CurrentRID);
 
             CommandInvoker UHERunInvoker = new(uheExecutablePath, "", env);
-            yield return UHERunInvoker.InvokeCommand(true);
+            yield return UHERunInvoker.WaitForResult();
         }
 
         public void TestDACOnLinux()

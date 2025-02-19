@@ -13,7 +13,7 @@ namespace DiagToolsValidationRunner.Commands.DebuggerExtensionTest
         Command<DebuggerExtensionTestCommand.DebuggerExtensionTestSettings>
     {
         private readonly string _baseNativeAOTAppSrcPath = 
-            Path.Combine("Commands", "DebuggerExtensionTest", "TargesAppsSrc", "nativeaot", "Program.cs.txt");
+            Path.Combine("Commands", "DebuggerExtensionTest", "TargetAppsSrc", "nativeaot", "Program.cs.txt");
 
         public sealed class DebuggerExtensionTestSettings : CommandSettings
         {
