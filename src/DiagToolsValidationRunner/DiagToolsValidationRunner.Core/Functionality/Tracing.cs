@@ -52,20 +52,6 @@ namespace DiagToolsValidationRunner.Core.Functionality
             }
         }
 
-        public CommandInvoker CollectTrace(Dictionary<string, string> env,
-                                           string tracePath,
-                                           string workingDirectory = "",
-                                           bool redirectStdOutErr = false,
-                                           bool silent = false)
-        {
-            return new("/bin/bash",
-                       $"{PerfCollectPath} collect {tracePath}",
-                       env,
-                       workingDirectory,
-                       redirectStdOutErr,
-                       silent);
-        }
-
         public CommandInvoker CollectTraceForSecs(Dictionary<string, string> env,
                                                   string tracePath,
                                                   int collectSecs,

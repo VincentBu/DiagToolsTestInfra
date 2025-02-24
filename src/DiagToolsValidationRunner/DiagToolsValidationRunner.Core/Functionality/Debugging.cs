@@ -84,12 +84,10 @@
 
     public class DotNetDumpAnalyzer
     {
-        private string DotNetExecutablePath { get; }
         public string DotNetDumpILPath { get; }
 
-        public DotNetDumpAnalyzer(string dotNetExecutablePath, string dotNetDumpILPath)
+        public DotNetDumpAnalyzer(string dotNetDumpILPath)
         {
-            this.DotNetExecutablePath = dotNetExecutablePath;
             this.DotNetDumpILPath = dotNetDumpILPath;
         }
 
@@ -100,7 +98,8 @@
                                              bool redirectStdOutErr = true,
                                              bool silent = true)
         {
-            CommandInvoker invoker = new(DotNetExecutablePath,
+            string dotNetExecutablePath = DotNetInfrastructure.GetDotNetExecutableFromEnv(env);
+            CommandInvoker invoker = new(dotNetExecutablePath,
                                          $"{DotNetDumpILPath} analyze {dumpPath}",
                                          env,
                                          workingDirectory,

@@ -27,9 +27,9 @@ namespace DiagToolsValidationRunner.Core.Configuration.DiagnosticsTest
 
     public class TargetAppSetting: BaseTargetAppSetting
     {
-        public DotNetApp? ConsoleApp;
-        public DotNetApp? WebApp;
-        public DotNetApp? GCDumpPlayground;
+        public DotNetApp ConsoleApp = new();
+        public DotNetApp WebApp = new();
+        public DotNetApp GCDumpPlayground = new();
     }
 
     public class DiagToolsTestRunConfiguration

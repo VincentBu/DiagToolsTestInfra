@@ -25,13 +25,15 @@
     <None Update="Commands\DebuggerExtensionTest\TargetAppsSrc\nativeaot\Program.cs.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Commands\DiagToolsTest\TargetAppsSrc\consoleapp\Program.cs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Commands\DiagToolsTest\TargetAppsSrc\GCDumpPlayground2\Program.cs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Commands\LTTngTest\TargetAppsSrc\gcperfsim\Program.cs.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Commands\LTTngTest\TargetAppsSrc\gcperfsim\" />
   </ItemGroup>
 
 </Project>

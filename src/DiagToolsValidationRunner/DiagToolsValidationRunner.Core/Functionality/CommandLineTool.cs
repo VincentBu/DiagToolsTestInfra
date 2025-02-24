@@ -89,7 +89,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
         }
     }
 
-    public class CommandInvoker: Process
+    public class CommandInvoker: Process, IDisposable
     {
         public static void PrintReceivedData(object sender, DataReceivedEventArgs args)
         {
@@ -210,6 +210,14 @@ namespace DiagToolsValidationRunner.Core.Functionality
             {
                 return new(Command, ConsoleOutput, stderr.ToString(), -1, ex);
             }
+        }
+
+        public new void Dispose()
+        {
+            this.Kill(true);
+            this.WaitForExit();
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public CommandInvokeResult TerminateForResult()

@@ -6,7 +6,6 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
     public class CrossOSDACTestRunner
     {
         private readonly CrossOSDACTestRunConfiguration RunConfig;
-        private readonly string DotNetExecutablePath;
         private readonly string ToolILPath;
         private readonly string OOMDumpPath;
         private readonly string UHEDumpPath;
@@ -29,7 +28,6 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                                     string baseUHEAppSrcPath)
         {
             RunConfig = runConfig;
-            DotNetExecutablePath = DotNetInfrastructure.GetDotNetExecutableFromEnv(RunConfig.SysInfo.EnvironmentVariables);
 
             OOMDumpPath = Path.Combine(RunConfig.Test.DumpFolder, $"oom-{DotNetInfrastructure.CurrentRID}.dmp");
             UHEDumpPath = Path.Combine(RunConfig.Test.DumpFolder, $"uhe-{DotNetInfrastructure.CurrentRID}.dmp");
@@ -135,7 +133,7 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                                         true);
 
             // Analyze dumps
-            DotNetDumpAnalyzer dumpAnalyzer = new(DotNetExecutablePath, ToolILPath);
+            DotNetDumpAnalyzer dumpAnalyzer = new(ToolILPath);
 
             CommandInvokeResult OOMDumpAnalyzeResult = dumpAnalyzer.DebugDump(RunConfig.SysInfo.EnvironmentVariables,
                                                                               "",
@@ -178,7 +176,7 @@ namespace DiagToolsValidationRunner.Core.TestRunner.CrossOSDACTest
                 throw new Exception($"{nameof(CrossOSDACTestRunner)}: Only support win-x64 or win-x86 SDK.");
             }
 
-            DotNetDumpAnalyzer dumpAnalyzer = new(DotNetExecutablePath, ToolILPath);
+            DotNetDumpAnalyzer dumpAnalyzer = new(ToolILPath);
             foreach (var dumpPath in dumpList)
             {
                 string dumpName = Path.GetFileNameWithoutExtension(dumpPath);
