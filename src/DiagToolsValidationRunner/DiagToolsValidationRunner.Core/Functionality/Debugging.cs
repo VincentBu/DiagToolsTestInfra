@@ -9,6 +9,42 @@
             this.CLIDebuggerPath = cliDebuggerPath;
         }
 
+        public static void GenerateSOSDebuggingScript(string debuggingScriptPath, List<string> SOSDebugCommandList)
+        {
+            // Generate debug script
+            List<string> preRunCommandList = new();
+            List<string> sosCommandList = new();
+            List<string> exitCommandList = new();
+            if (OperatingSystem.IsWindows())
+            {
+                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
+                preRunCommandList = [
+                    ".unload sos",
+                    $".load {sosExtension}"
+                ];
+                sosCommandList = SOSDebugCommandList
+                    .Select(command => $"!{command}")
+                    .ToList();
+                exitCommandList = [
+                    ".detach",
+                    "qq"
+                ];
+            }
+            else
+            {
+                sosCommandList = SOSDebugCommandList;
+                exitCommandList = ["exit"];
+            }
+
+            List<string> debuggingCommandList = preRunCommandList
+                .Concat(sosCommandList)
+                .Concat(exitCommandList)
+                .ToList();
+
+            File.WriteAllLines(debuggingScriptPath, debuggingCommandList);
+        }
+
         public CommandInvokeResult DebugDump(Dictionary<string, string> env,
                                              string targetRID,
                                              string workingDirectory,

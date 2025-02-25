@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DiagToolsValidationRunner.Core.Configuration.DiagnosticsTest;
-using DiagToolsValidationRunner.Core.TestRunner;
+using DiagToolsValidationRunner.Core.TestRunner.DiagToolsTest;
 using Spectre.Console.Cli;
 
 namespace DiagToolsValidationRunner.Commands.DiagToolsTest
@@ -32,6 +32,7 @@ namespace DiagToolsValidationRunner.Commands.DiagToolsTest
                 DiagToolsTestConfigurationGenerator.GenerateConfiguration(settings.ConfigurationPath);
 
             DiagToolsTestRunner runner = new(config, _baseConsoleAppSrcPath, _baseGCDumpPlaygroundSrcPath);
+            runner.TestDiagnosticTools();
             return 0;
         }
     }

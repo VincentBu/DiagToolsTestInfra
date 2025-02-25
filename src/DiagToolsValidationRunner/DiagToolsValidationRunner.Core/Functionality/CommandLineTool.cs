@@ -136,7 +136,6 @@ namespace DiagToolsValidationRunner.Core.Functionality
             this.StartInfo.UseShellExecute = false;
             this.StartInfo.RedirectStandardInput = true;
             this.StartInfo.WorkingDirectory = workDirectory;
-            this.StartInfo.CreateNoWindow = true;
 
             this.StartInfo.EnvironmentVariables.Clear();
             this.StartInfo.EnvironmentVariables["Path"] = Environment.GetEnvironmentVariable("Path");
@@ -210,14 +209,6 @@ namespace DiagToolsValidationRunner.Core.Functionality
             {
                 return new(Command, ConsoleOutput, stderr.ToString(), -1, ex);
             }
-        }
-
-        public new void Dispose()
-        {
-            this.Kill(true);
-            this.WaitForExit();
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         public CommandInvokeResult TerminateForResult()

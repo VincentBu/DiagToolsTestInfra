@@ -1,7 +1,8 @@
-﻿using YamlDotNet.Serialization;
+﻿using System.Collections;
+
+using YamlDotNet.Serialization;
 
 using DiagToolsValidationRunner.Core.Functionality;
-using System.Collections;
 
 namespace DiagToolsValidationRunner.Core.Configuration.LTTngTest
 {

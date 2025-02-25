@@ -130,40 +130,6 @@ $"""
         {
             Directory.CreateDirectory(RunConfig.Test.DumpDebuggingOutputFolder);
 
-            // Generate debug script
-            string debugDumpScriptPath = Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, "debug-dump-script.txt");
-            List<string> preRunCommandList = new();
-            List<string> sosCommandList = new();
-            List<string> exitCommandList = new();
-            if (DotNetInfrastructure.CurrentRID.Contains("win"))
-            {
-                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
-                preRunCommandList = [
-                    ".unload sos",
-                    $".load {sosExtension}"
-                ];
-                sosCommandList = SOSDebugCommandList
-                    .Select(command => $"!{command}")
-                    .ToList();
-                exitCommandList = [
-                    ".detach",
-                    "qq"
-                ];
-            }
-            else
-            {
-                sosCommandList = SOSDebugCommandList;
-                exitCommandList = ["exit"];
-            }
-
-            List<string> debuggingCommandList = preRunCommandList
-                .Concat(sosCommandList)
-                .Concat(exitCommandList)
-                .ToList();
-
-            File.WriteAllLines(debugDumpScriptPath, debuggingCommandList);
-
             // Active dump and stresslog generated environment
             Dictionary<string, string> env = new(RunConfig.SysInfo.EnvironmentVariables);
             if (DotNetInfrastructure.CurrentRID.Contains("win"))
@@ -192,6 +158,10 @@ $"""
             };
 
             CLIDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
+
+            // Generate debug script
+            string debugDumpScriptPath = Path.Combine(RunConfig.Test.DumpDebuggingOutputFolder, "debug-dump-script.txt");
+            CLIDebugger.GenerateSOSDebuggingScript(debugDumpScriptPath, SOSDebugCommandList);
             yield return debugger.DebugDump(env,
                                             DotNetInfrastructure.CurrentRID,
                                             RunConfig.Test.DumpDebuggingOutputFolder,
@@ -202,43 +172,6 @@ $"""
         private IEnumerable<CommandInvokeResult> TestByDebuggingProcess()
         {
             Directory.CreateDirectory(RunConfig.Test.LiveSessionDebuggingOutputFolder);
-
-            // Generate debug script
-            string debugProcessScriptPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder, "debug-process-script.txt");
-            List<string> preRunCommandList = new();
-            List<string> sosCommandList = new();
-            List<string> exitCommandList = new();
-            if (DotNetInfrastructure.CurrentRID.Contains("win"))
-            {
-                string? userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
-                string sosExtension = Path.Combine($"{userProfile}", ".dotnet", "sos", "sos.dll");
-                preRunCommandList = [
-                    ".unload sos",
-                    $".load {sosExtension}"
-                ];
-                sosCommandList = SOSDebugCommandList
-                    .Select(command => $"!{command}")
-                    .ToList();
-                exitCommandList = [
-                    ".detach",
-                    "qq"
-                ];
-            }
-            else
-            {
-                preRunCommandList = [
-                    "run"
-                ];
-                sosCommandList = SOSDebugCommandList;
-                exitCommandList = ["exit"];
-            }
-
-            List<string> debuggingCommandList = preRunCommandList
-                .Concat(sosCommandList)
-                .Concat(exitCommandList)
-                .ToList();
-
-            File.WriteAllLines(debugProcessScriptPath, debuggingCommandList);
 
             // Active stresslog generated environment
             Dictionary<string, string> env = new(RunConfig.SysInfo.EnvironmentVariables);
@@ -255,6 +188,9 @@ $"""
                                                                                                       DotNetInfrastructure.CurrentRID);
 
             CLIDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
+            // Generate debug script
+            string debugProcessScriptPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder, "debug-process-script.txt");
+            CLIDebugger.GenerateSOSDebuggingScript(debugProcessScriptPath, SOSDebugCommandList);
             yield return debugger.DebugLaunchable(env,
                                                   DotNetInfrastructure.CurrentRID,
                                                   RunConfig.Test.LiveSessionDebuggingOutputFolder,

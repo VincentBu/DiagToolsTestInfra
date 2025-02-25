@@ -54,8 +54,8 @@ namespace DiagToolsValidationRunner.Core.Functionality
         internal static async Task<string> GenerateDotNetSDKDownloadLink(string sdkFullVersion, string targetRID)
         {
             List<string> AzureFeedList = [
-                "https://dotnetcli.azureedge.net/dotnet",
-                "https://dotnetbuilds.azureedge.net/public"
+                "https://builds.dotnet.microsoft.com/dotnet",
+                "https://ci.dot.net/public"
             ];
             string compressedPackageExtension = GetCompressionExtensionByRID(targetRID);
 
