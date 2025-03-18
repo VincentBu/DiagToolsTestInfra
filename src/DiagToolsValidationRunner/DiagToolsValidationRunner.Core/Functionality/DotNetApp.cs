@@ -40,7 +40,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
 
         public static string GetNativeSymbolFolder(string appRoot, string targetFramework, string buildConfig, string targetRID)
         {
-            string appNativeSymbolFolder = Path.Combine(appRoot, "bin", buildConfig, targetFramework, targetRID, "publish");
+            string appNativeSymbolFolder = Path.Combine(appRoot, "bin", buildConfig, targetFramework, targetRID, "native");
             if (!Directory.Exists(appNativeSymbolFolder))
             {
                 throw new Exception($"{nameof(DotNetApp)}: Symbol folder {appNativeSymbolFolder} doesn't exist in {appRoot}");
@@ -123,7 +123,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
 
         public string GetNativeAppExecutable(string buildConfig, string targetRID)
         {
-            string nativeSymbolFolder = this.GetSymbolFolder(buildConfig, targetRID);
+            string nativeSymbolFolder = this.GetNativeSymbolFolder(buildConfig, targetRID);
             return DotNetApp.GetAppNativeExecutable(nativeSymbolFolder, AppName, targetRID);
         }
 

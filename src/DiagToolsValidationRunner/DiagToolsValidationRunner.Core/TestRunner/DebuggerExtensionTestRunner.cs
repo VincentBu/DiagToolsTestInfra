@@ -144,8 +144,19 @@ $"""
 
             DotNetInfrastructure.ActiveStressLogEnvironment(env);
 
-            // Run nativeaot
+            // Copy createdump to native folder(non-windows platform)
+            if (!OperatingSystem.IsWindows())
+            {
+                string symbolFolder = RunConfig.AppSetting.NativeAOTApp.GetSymbolFolder(RunConfig.AppSetting.BuildConfig,
+                                                                                        DotNetInfrastructure.CurrentRID);
+                string createDumpSrcPath = Path.Combine(symbolFolder, "createdump");
+                string nativeSymbolFolder = RunConfig.AppSetting.NativeAOTApp.GetNativeSymbolFolder(RunConfig.AppSetting.BuildConfig,
+                                                                                                    DotNetInfrastructure.CurrentRID);
+                string createDumpDstPath = Path.Combine(nativeSymbolFolder, "createdump");
+                File.Copy(createDumpSrcPath, createDumpDstPath);
+            }
 
+            // Run nativeaot
             string nativeaotExecutablePath = RunConfig.AppSetting.NativeAOTApp.GetNativeAppExecutable(RunConfig.AppSetting.BuildConfig,
                                                                                                       DotNetInfrastructure.CurrentRID);
 
