@@ -105,7 +105,7 @@
                 targetRID.Contains("win") switch
                 {
                     true => $"-g -cf {debuggerScriptPath} {launchable}",
-                    false => $"-o \"run\" -s {debuggerScriptPath} --batch {launchable}"
+                    false => $"-s {debuggerScriptPath} --batch {launchable}"
                 };
 
             CommandInvoker invoker = new(CLIDebuggerPath,

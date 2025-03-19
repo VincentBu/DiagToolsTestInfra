@@ -201,7 +201,12 @@ $"""
             CLIDebugger debugger = new(RunConfig.SysInfo.CLIDebugger);
             // Generate debug script
             string debugProcessScriptPath = Path.Combine(RunConfig.Test.LiveSessionDebuggingOutputFolder, "debug-process-script.txt");
-            CLIDebugger.GenerateSOSDebuggingScript(debugProcessScriptPath, SOSDebugCommandList);
+            List<string> debugCommandList = new(SOSDebugCommandList);
+            if (!OperatingSystem.IsWindows())
+            {
+                debugCommandList.Insert(0, "run");
+            }
+            CLIDebugger.GenerateSOSDebuggingScript(debugProcessScriptPath, debugCommandList);
             yield return debugger.DebugLaunchable(env,
                                                   DotNetInfrastructure.CurrentRID,
                                                   RunConfig.Test.LiveSessionDebuggingOutputFolder,
