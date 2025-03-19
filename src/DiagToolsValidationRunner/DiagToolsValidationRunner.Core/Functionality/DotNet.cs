@@ -168,7 +168,7 @@ namespace DiagToolsValidationRunner.Core.Functionality
             {
                 RegistryKey registrykeyHKLM = Registry.LocalMachine;
                 string LocalDumpsKeyPath = @"Software\Microsoft\Windows\Windows Error Reporting\LocalDumps";
-                using (RegistryKey? LocalDumpsKey = registrykeyHKLM.OpenSubKey(LocalDumpsKeyPath, true))
+                using (RegistryKey? LocalDumpsKey = registrykeyHKLM.CreateSubKey(LocalDumpsKeyPath, true))
                 {
                     LocalDumpsKey!.SetValue("DumpFolder", dumpFolder, RegistryValueKind.ExpandString);
                     LocalDumpsKey!.SetValue("DumpType", 2, RegistryValueKind.DWord);
