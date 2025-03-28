@@ -9,7 +9,13 @@ from subprocess import Popen, PIPE
 class CommandInvoker(Popen):
     '''CommandInvoker inherit subprocess.Popen and implement live output
     '''
-    def __init__(self, args: list[str], cwd=None, env=None, redirect_std_out_err=True, silent=True):
+    def __init__(self,
+                 args: list[str],
+                 cwd=None,
+                 env=None,
+                 redirect_std_in=True,
+                 redirect_std_out_err=True,
+                 silent=True):
         '''
         :param args: command in string list format
         :param cwd: working directory
@@ -36,11 +42,12 @@ class CommandInvoker(Popen):
         self.__stderr: str = ''
 
         try:
+            stdin = PIPE if redirect_std_in else None
             super().__init__(args,
                             bufsize=1,
                             cwd=cwd,
                             env=env,
-                            stdin=PIPE,
+                            stdin=stdin,
                             stdout=self.__stdout_write_stream,
                             stderr=self.__stderr_write_stream,
                             universal_newlines=True)

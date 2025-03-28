@@ -28,6 +28,31 @@ class DotNetApp:
         else:
             self.__name = name
 
+
+    @property
+    def app_root(self):
+        '''Get app root.
+        '''
+        return self.__root
+
+    @property
+    def app_template(self):
+        '''Get app template.
+        '''
+        return self.__template
+
+    @property
+    def app_name(self):
+        '''Get app name.
+        '''
+        return self.__name
+
+    @property
+    def dotnet_env(self):
+        '''Get .NET environment.
+        '''
+        return self.__dotnet_env
+
     def get_project_file_path(self):
         '''Get project file of a .NET app.
 

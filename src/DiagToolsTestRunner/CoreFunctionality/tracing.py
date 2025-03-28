@@ -1,4 +1,4 @@
-'''Tracing tool for Linux
+'''Tracing tool for .NET app
 '''
 
 import os
@@ -7,7 +7,7 @@ from CoreFunctionality import common
 from CoreFunctionality.cli import CommandInvoker
 
 class PerfCollect:
-    '''Install perfcollect and trace for app.
+    '''ITracing with perfcollect.
     '''
     def __init__(self, perfcollect_path: str, install_prerequisites: bool=False):
         '''
