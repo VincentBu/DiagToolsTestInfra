@@ -39,6 +39,7 @@ class LTTngTestRunner:
         :param config: a LTTngTestConfig instance
         :return: enumerable CommandInvoker
         '''
+        os.makedirs(self.__config.TestResultFolder, exist_ok=True)
         # install sdk
         yield self.__config.Installer.install_dotnet_sdk()
 
