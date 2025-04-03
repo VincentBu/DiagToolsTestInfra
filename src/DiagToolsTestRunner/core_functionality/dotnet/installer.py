@@ -36,7 +36,7 @@ class DotNetInstaller:
         common.http_download(self.__script_path, self.__script_download_link)
         if common.rid_os_name().startswith('linux') or common.rid_os_name().startswith('osx'):
             enable_execute_args = ['chmod', '+x', self.__script_path]
-            with CommandInvoker(enable_execute_args, os.environ, silent=False) as ci:
+            with CommandInvoker(enable_execute_args, env=os.environ, silent=False) as ci:
                 ci.communicate()
 
     def install_dotnet_sdk(self):
