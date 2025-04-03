@@ -4,7 +4,6 @@
 import os
 import glob
 import json
-import winreg
 import tomllib
 import platform
 import tarfile
@@ -12,6 +11,10 @@ import zipfile
 from types import SimpleNamespace
 from urllib import request
 from http.client import HTTPResponse
+try:
+    import winreg
+except ModuleNotFoundError:
+    print('skip winreg module')
 
 __UNAME = platform.uname()
 __USERPROFILE = ''
@@ -133,7 +136,6 @@ class Win32DumpEnvironment():
         :param dump_folder: dump folder
         '''
         assert __SHORTOSNAME == 'win'
-
         self.__dump_folder = dump_folder
         self.__local_dumps_key: winreg.HKEYType = None
         self.__original_dump_folder = ''

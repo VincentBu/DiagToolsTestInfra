@@ -56,11 +56,11 @@ class CommandInvoker(Popen):
                             universal_newlines=True)
         except Exception:
             self.__stdout_write_stream.close()
-            self.__stdout_write_stream.close()
+            self.__stderr_write_stream.close()
             self.__temp_dir.cleanup()
             raise
 
-        if redirect_std_out_err:
+        if self.__redirect_std_out_err:
             self.__stdout_reader = Thread(target=self.__stdout_pipe_consumer)
             self.__stdout_reader.start()
             self.__stderr_reader = Thread(target=self.__stderr_pipe_consumer)
@@ -78,7 +78,7 @@ class CommandInvoker(Popen):
                         print(f'    {line}')
         except Exception:
             self.__stdout_write_stream.close()
-            self.__stdout_write_stream.close()
+            self.__stderr_write_stream.close()
             self.__temp_dir.cleanup()
             raise
 
@@ -94,15 +94,18 @@ class CommandInvoker(Popen):
                         print(f'    {line}')
         except Exception:
             self.__stdout_write_stream.close()
-            self.__stdout_write_stream.close()
+            self.__stderr_write_stream.close()
             self.__temp_dir.cleanup()
             raise
 
+    def __enter__(self):
+        return self
+
     def __exit__(self, exc_type, value, traceback):
         if self.__redirect_std_out_err:
-            self.__stdout_reader.join()
+            # self.__stdout_reader.join()
             self.__stdout_write_stream.close()
-            self.__stderr_reader.join()
+            # self.__stderr_reader.join()
             self.__stderr_write_stream.close()
             self.__temp_dir.cleanup()
         return super().__exit__(exc_type, value, traceback)

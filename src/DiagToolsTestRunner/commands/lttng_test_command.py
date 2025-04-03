@@ -1,8 +1,6 @@
 '''Implement lttng test command runner
 '''
 
-from typing import override
-
 from eazycli import add_argument, CommandLineArguments, CommandRunner
 
 from test_runner.lttng_test.config import generate_lttng_test_config
@@ -20,7 +18,6 @@ class TestLTTngCommandLineArguments(CommandLineArguments):
 class TestLTTngCommandRunner(CommandRunner, TestLTTngCommandLineArguments):
     '''Implement runner for test-lttng command.
     '''
-    @override
     def execute(self, command_line_arguments: TestLTTngCommandLineArguments):
         '''Implement execute method.
 

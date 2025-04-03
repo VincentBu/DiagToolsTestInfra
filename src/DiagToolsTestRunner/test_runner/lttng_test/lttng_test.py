@@ -17,5 +17,5 @@ def test_lttng(config: LTTngTestConfig):
         config.TestResultFolder,
         f'trace-net{sdk_version}-{rid}')
     yield config.PerfCollect.collect_trace_for_secs(
-        trace_path, 10, redirect_std_out_err=True
+        trace_path, 10, redirect_std_out_err=False
     )

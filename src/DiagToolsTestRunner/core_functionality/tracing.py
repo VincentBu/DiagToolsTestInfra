@@ -24,7 +24,7 @@ class PerfCollect:
         common.http_download(self.__perfcollect_path, self.__perfcollect_download_link)
 
         enable_execute_args = ['chmod', '+x', self.__perfcollect_path]
-        with CommandInvoker(enable_execute_args, os.environ, silent=False) as ci:
+        with CommandInvoker(enable_execute_args, env=os.environ, silent=False) as ci:
             ci.communicate()
 
         if install_prerequisites:
@@ -33,7 +33,7 @@ class PerfCollect:
                 self.__perfcollect_path,
                 'install'
             ]
-            with CommandInvoker(install_args, os.environ, silent=False) as ci:
+            with CommandInvoker(install_args, env=os.environ, silent=False) as ci:
                 ci.communicate()
 
     @property
@@ -64,7 +64,7 @@ class PerfCollect:
         ]
         with CommandInvoker(
             args,
-            os.environ,
+            env=os.environ,
             redirect_std_out_err=redirect_std_out_err,
             silent=silent
         ) as invoker:

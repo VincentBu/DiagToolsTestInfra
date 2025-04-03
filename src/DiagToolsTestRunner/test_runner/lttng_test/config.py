@@ -46,8 +46,7 @@ def generate_lttng_test_config(config_file_path: str) -> list[LTTngTestConfig]:
         target_rid = f'{common.rid_os_name()}-{common.rid_machine_name()}'
         build_config = base_config.App.BuildConfig
         env = DotNetEnvironment(dotnet_root, version, target_rid)
-        script_path = os.path.join(base_config.Test.TestBed, 'dotnet-install')
-        installer = DotNetInstaller(script_path, env)
+        installer = DotNetInstaller(base_config.Test.TestBed, env)
         app_root = os.path.join(base_config.Test.TestBed, f'gcperfsim-{version}')
         gcperfsim_app = DotNetApp(env, app_root, 'console', build_config, name='gcperfsim')
         test_result_folder = os.path.join(base_config.Test.TestBed, f'TestResult-{version}')
