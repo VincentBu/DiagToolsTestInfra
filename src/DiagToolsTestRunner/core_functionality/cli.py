@@ -3,7 +3,7 @@
 
 import os
 from tempfile import TemporaryDirectory
-from threading import Thread
+from threading import Thread, Lock
 from subprocess import Popen, PIPE, SubprocessError
 from typing import Generator, Any
 
@@ -25,6 +25,8 @@ class CommandInvoker(Popen):
         :param redirect_std_out_err: whether to redirect stardard output and err
         :param silent: whether to suppress console output
         '''
+        self.__lock = Lock()
+        self.__stop_signal = False
         self.__redirect_std_out_err = redirect_std_out_err
         self.__silent: bool = silent
 
@@ -67,9 +69,22 @@ class CommandInvoker(Popen):
             self.__stderr_reader.start()
 
     def __stdout_pipe_consumer(self):
+        stop_signal = False
         try:
             with open(self.__std_out_file, mode='r+', encoding='utf-8') as stdout_read_stream:
                 while self.returncode is None:
+                    self.__lock.acquire()
+                    stop_signal = self.__stop_signal
+                    self.__lock.release()
+                    if stop_signal:
+                        for _line in stdout_read_stream.readlines():
+                            if _line.strip() in [None, '', '\n', '\r', '\r\n']:
+                                continue
+                            self.__stdout += f'{_line}\n'
+                            if not self.__silent:
+                                print(f'    {_line}')
+                        break
+
                     line = stdout_read_stream.readline()
                     if line.strip() in [None, '', '\n', '\r', '\r\n']:
                         continue
@@ -83,9 +98,22 @@ class CommandInvoker(Popen):
             raise
 
     def __stderr_pipe_consumer(self):
+        stop_signal = False
         try:
             with open(self.__std_err_file, mode='r+', encoding='utf-8') as stderr_read_stream:
                 while self.returncode is None:
+                    self.__lock.acquire()
+                    stop_signal = self.__stop_signal
+                    self.__lock.release()
+                    if stop_signal:
+                        for _line in stderr_read_stream.readlines():
+                            if _line.strip() in [None, '', '\n', '\r', '\r\n']:
+                                continue
+                            self.__stderr += f'{_line}\n'
+                            if not self.__silent:
+                                print(f'    {_line}')
+                        break
+
                     line = stderr_read_stream.readline()
                     if line.strip() in [None, '', '\n', '\r', '\r\n']:
                         continue
@@ -102,10 +130,13 @@ class CommandInvoker(Popen):
         return self
 
     def __exit__(self, exc_type, value, traceback):
+        self.__lock.acquire()
+        self.__stop_signal = True
+        self.__lock.release()
         if self.__redirect_std_out_err:
-            # self.__stdout_reader.join()
+            self.__stdout_reader.join()
             self.__stdout_write_stream.close()
-            # self.__stderr_reader.join()
+            self.__stderr_reader.join()
             self.__stderr_write_stream.close()
             self.__temp_dir.cleanup()
         return super().__exit__(exc_type, value, traceback)
