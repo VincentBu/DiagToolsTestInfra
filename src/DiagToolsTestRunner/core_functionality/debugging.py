@@ -4,8 +4,8 @@
 import os
 from tempfile import TemporaryDirectory
 
-from CoreFunctionality import common
-from CoreFunctionality.cli import CommandInvoker
+from core_functionality import common
+from core_functionality.cli import CommandInvoker
 
 class CLIDebugger:
     '''Invoke CLI debugger like cdb and lldb.
@@ -79,10 +79,10 @@ class CLIDebugger:
                             redirect_std_in=redirect_std_in,
                             redirect_std_out_err=redirect_std_out_err,
                             silent=silent
-        ) as ci:
-            ci.communicate()
+        ) as invoker:
+            invoker.communicate()
             temp_dir.cleanup()
-            return ci
+            return invoker
 
     def debug_process(self,
                       pid: str,
@@ -128,10 +128,10 @@ class CLIDebugger:
                             redirect_std_in=redirect_std_in,
                             redirect_std_out_err=redirect_std_out_err,
                             silent=silent
-        ) as ci:
-            ci.communicate()
+        ) as invoker:
+            invoker.communicate()
             temp_dir.cleanup()
-            return ci
+            return invoker
 
     def debug_launchable(self,
                          launchable: str,
@@ -174,7 +174,7 @@ class CLIDebugger:
                             redirect_std_in=redirect_std_in,
                             redirect_std_out_err=redirect_std_out_err,
                             silent=silent
-        ) as ci:
-            ci.communicate()
+        ) as invoker:
+            invoker.communicate()
             temp_dir.cleanup()
-            return ci
+            return invoker

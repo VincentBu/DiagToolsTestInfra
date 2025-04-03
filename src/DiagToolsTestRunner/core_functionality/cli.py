@@ -4,10 +4,12 @@
 import os
 from tempfile import TemporaryDirectory
 from threading import Thread
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, SubprocessError
+from typing import Generator, Any
+
 
 class CommandInvoker(Popen):
-    '''CommandInvoker inherit subprocess.Popen and implement live output
+    '''CommandInvoker inherit subprocess.Popen and implement live output.
     '''
     def __init__(self,
                  args: list[str],
@@ -41,6 +43,7 @@ class CommandInvoker(Popen):
         self.__stdout: str = ''
         self.__stderr: str = ''
 
+        print(f'run command: {self.__command}')
         try:
             stdin = PIPE if redirect_std_in else None
             super().__init__(args,
@@ -57,7 +60,6 @@ class CommandInvoker(Popen):
             self.__temp_dir.cleanup()
             raise
 
-        print(f'run command: {self.__command}')
         if redirect_std_out_err:
             self.__stdout_reader = Thread(target=self.__stdout_pipe_consumer)
             self.__stdout_reader.start()
@@ -122,3 +124,32 @@ class CommandInvoker(Popen):
         '''Get standard error
         '''
         return self.__stderr
+
+
+def command_sequence_runner(logger_path: str,
+                            command_invoke_sequence: Generator[CommandInvoker, Any, None],
+                            ignore_error: bool=False):
+    '''Run Generator[CommandInvoker].
+    
+    :param logger_path: logger path
+    :param command_invoke_sequence: a Generator[CommandInvoker] instance
+    :param ignore_error: whether to ignore error 
+    '''
+    while True:
+        content = []
+        try:
+            invoker = next(command_invoke_sequence)
+            content.append(f'Run command: {invoker.command}\n')
+            content.append(f'{invoker.standard_output}\n')
+            content.append(f'{invoker.standard_error}\n')
+        except StopIteration:
+            break
+        except SubprocessError as ex:
+            content.append(f'Fail to run command \"{invoker.command}\": {ex}\n')
+            if not ignore_error:
+                break
+            else:
+                continue
+        finally:
+            with open(logger_path, 'a+', encoding='utf-8') as logger:
+                logger.writelines(content)

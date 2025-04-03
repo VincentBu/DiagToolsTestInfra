@@ -3,7 +3,7 @@
 
 import os
 
-from CoreFunctionality import common
+from core_functionality import common
 
 class DotNetEnvironment:
     '''Basic information of .NET environment.

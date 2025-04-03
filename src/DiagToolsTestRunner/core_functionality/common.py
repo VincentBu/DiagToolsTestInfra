@@ -3,10 +3,13 @@
 
 import os
 import glob
+import json
 import winreg
+import tomllib
 import platform
 import tarfile
 import zipfile
+from types import SimpleNamespace
 from urllib import request
 from http.client import HTTPResponse
 
@@ -108,6 +111,18 @@ def extract_zip(compressed_file_path: str, destination_folder: str):
     '''
     with zipfile.ZipFile(compressed_file_path, 'r') as zip_ref:
         zip_ref.extractall(destination_folder)
+
+
+def parse_toml(toml_file_path: str):
+    '''Parse toml file and convert to namespace. 
+
+    :param toml_file_path: path of toml file
+    :return: a namespace instance
+    '''
+    with open(toml_file_path, 'rb') as fp:
+        toml_in_dict = tomllib.load(fp)
+        json_str = json.dumps(toml_in_dict)
+        return json.loads(json_str, object_hook=lambda k: SimpleNamespace(**k))
 
 
 class Win32DumpEnvironment():

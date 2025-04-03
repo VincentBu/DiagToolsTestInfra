@@ -3,11 +3,11 @@
 
 import os
 
-from CoreFunctionality import common
-from CoreFunctionality.cli import CommandInvoker
+from core_functionality import common
+from core_functionality.cli import CommandInvoker
 
 class PerfCollect:
-    '''ITracing with perfcollect.
+    '''Tracing with perfcollect.
     '''
     def __init__(self, perfcollect_path: str, install_prerequisites: bool=False):
         '''
@@ -23,14 +23,24 @@ class PerfCollect:
 
         common.http_download(self.__perfcollect_path, self.__perfcollect_download_link)
 
+        enable_execute_args = ['chmod', '+x', self.__perfcollect_path]
+        with CommandInvoker(enable_execute_args, os.environ, silent=False) as ci:
+            ci.communicate()
+
         if install_prerequisites:
-            args = [
+            install_args = [
                 '/bin/bash',
                 self.__perfcollect_path,
                 'install'
             ]
-            with CommandInvoker(args, os.environ, silent=False) as ci:
+            with CommandInvoker(install_args, os.environ, silent=False) as ci:
                 ci.communicate()
+
+    @property
+    def perfcollect_path(self):
+        '''Get perfcollect path.
+        '''
+        return self.__perfcollect_path
 
     def collect_trace_for_secs(self,
                                trace_path: str,
@@ -57,5 +67,6 @@ class PerfCollect:
             os.environ,
             redirect_std_out_err=redirect_std_out_err,
             silent=silent
-        ) as ci:
-            ci.communicate()
+        ) as invoker:
+            invoker.communicate()
+            return invoker
